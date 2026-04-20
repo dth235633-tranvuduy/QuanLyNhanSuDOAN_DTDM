@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/login.css" />
+</head>
+<body>
+  <main class="login-page">
+    <section class="login-card">
+      <img src="/assets/logo-hrms.svg" alt="SevenTime HRMS" class="logo" />
+      <h1>Đăng nhập hệ thống</h1>
+      <p class="hint">Đăng nhập một lần, hệ thống tự chuyển trang theo quyền admin hoặc nhân viên.</p>
+
+      <% if (errorMessage) { %>
+        <div class="error-box"><%= errorMessage %></div>
+      <% } %>
+
+      <form action="/login" method="post">
+        <label>
+          <span>Tên đăng nhập</span>
+          <input type="text" name="TenDangNhap" placeholder="Ví dụ: admin hoặc nv001" required />
+        </label>
+
+        <label>
+          <span>Mật khẩu</span>
+          <input type="password" name="MatKhau" placeholder="Nhập mật khẩu" required />
+        </label>
+
+        <button type="submit">Đăng nhập</button>
+      </form>
+
+      <a href="/" class="back-link">Quay về trang chủ</a>
+    </section>
+  </main>
+</body>
+</html>

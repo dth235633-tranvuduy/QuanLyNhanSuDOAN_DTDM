@@ -1,0 +1,60 @@
+<%- include('partials/start', { title, activeMenu, employee }) %>
+
+<section class="notice-panel full">
+  <% const allNotices = notifications || []; %>
+  <% const urgentCount = allNotices.filter((item) => {
+       const raw = String(item.priority || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+       return /khan\s*cap|quan\s*trong/.test(raw);
+     }).length; %>
+
+  <div class="notice-title"><i class="bi bi-megaphone"></i> Bảng tin chuyên đề</div>
+  <div class="notice-overview">
+    <article>
+      <span>Tổng bản tin</span>
+      <strong><%= allNotices.length %></strong>
+    </article>
+    <article>
+      <span>Tin ưu tiên</span>
+      <strong><%= urgentCount %></strong>
+    </article>
+    <article>
+      <span>Kênh nội bộ</span>
+      <strong>HRMS</strong>
+    </article>
+  </div>
+
+  <div class="notice-list">
+    <% if (!allNotices.length) { %>
+      <div class="notice-empty">Hiện chưa có thông báo mới.</div>
+    <% } %>
+    <% allNotices.forEach((item) => { %>
+      <% const publishDate = new Date(item.publishedAt); %>
+      <% const publishDateText = Number.isNaN(publishDate.getTime()) ? '--/--/----' : publishDate.toLocaleDateString('vi-VN'); %>
+      <% const externalUrl = String(item.url || '').trim(); %>
+      <% const hasExternalUrl = Boolean(externalUrl) && externalUrl !== '#'; %>
+      <% const priorityRaw = String(item.priority || 'Thường'); %>
+      <% const priorityText = priorityRaw || 'Thường'; %>
+      <% const prioritySlug = priorityText.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); %>
+      <% let priorityClass = 'normal'; %>
+      <% if (/khan\s*cap/.test(prioritySlug)) { priorityClass = 'urgent'; } else if (/quan\s*trong/.test(prioritySlug)) { priorityClass = 'important'; } %>
+      <article class="notice-item">
+        <span class="notice-date"><%= publishDateText %></span>
+        <div class="notice-content">
+          <div class="notice-tags">
+            <span class="notice-tag"><%= item.category || 'Nội bộ' %></span>
+            <span class="notice-tag priority <%= priorityClass %>"><%= priorityText %></span>
+          </div>
+          <h4><%= item.title %></h4>
+          <p><%= item.description || 'Xem chi tiết trong đường dẫn nguồn.' %></p>
+        </div>
+        <% if (hasExternalUrl) { %>
+          <a href="<%= externalUrl %>" target="_blank" rel="noopener noreferrer">Mở nguồn</a>
+        <% } else { %>
+          <span class="notice-link-disabled">Thông báo nội bộ</span>
+        <% } %>
+      </article>
+    <% }) %>
+  </div>
+</section>
+
+<%- include('partials/end') %>

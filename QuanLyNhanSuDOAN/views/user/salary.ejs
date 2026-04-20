@@ -1,0 +1,194 @@
+<%- include('partials/start', { title, activeMenu, employee }) %>
+
+<% if (!employee) { %>
+  <section class="hero empty">
+    <h1>Không tìm thấy dữ liệu nhân viên</h1>
+    <p>Vui lòng liên hệ quản trị để cập nhật hồ sơ trước khi xem bảng lương.</p>
+  </section>
+<% } else { %>
+  <section class="salary-board" id="bang-luong">
+    <header class="salary-header">
+      <div>
+        <h2><i class="bi bi-wallet2"></i> Bảng Lương Cá Nhân</h2>
+        <p>Tính tự động theo ngày chấm công thực tế trong tháng bạn chọn.</p>
+      </div>
+
+      <form class="salary-filter" method="get" action="/user/bang-luong">
+        <label>
+          Tháng
+          <select name="thang" onchange="this.form.submit()">
+            <% for (let month = 1; month <= 12; month += 1) { %>
+              <option value="<%= month %>" <%= filters.thang === month ? 'selected' : '' %>><%= month %></option>
+            <% } %>
+          </select>
+        </label>
+
+        <label>
+          Năm
+          <select name="nam" onchange="this.form.submit()">
+            <% yearOptions.forEach((year) => { %>
+              <option value="<%= year %>" <%= filters.nam === year ? 'selected' : '' %>><%= year %></option>
+            <% }) %>
+          </select>
+        </label>
+
+      </form>
+    </header>
+
+    <section class="salary-summary-grid">
+      <article>
+        <h4>Kỳ lương hiển thị</h4>
+        <p><%= filters.thang %>/<%= filters.nam %></p>
+      </article>
+      <article>
+        <h4>Tháng dữ liệu</h4>
+        <p><%= summary.totalMonths %></p>
+      </article>
+      <article>
+        <h4>Ngày công tháng</h4>
+        <p><%= summary.monthWorkingDays %></p>
+      </article>
+      <article>
+        <h4>Tổng thực nhận</h4>
+        <p><%= summary.totalNet %></p>
+      </article>
+    </section>
+
+    <% if (contractInfo) { %>
+      <section class="salary-contract-line">
+        <span><i class="bi bi-file-earmark-text"></i> Hợp đồng: <strong><%= contractInfo.MaHopDong %></strong></span>
+        <span>Loại: <strong><%= contractInfo.LoaiHopDong %></strong></span>
+        <span>Trạng thái: <strong><%= contractInfo.TrangThai_HopDong %></strong></span>
+        <span>Lương cơ bản: <strong><%= contractInfo.LuongCoBan %></strong></span>
+        <span>Phụ cấp: <strong><%= contractInfo.PhuCap %></strong></span>
+      </section>
+    <% } %>
+
+    <section class="payslip-section" id="phieu-luong">
+      <div class="payslip-title-wrap">
+        <h3><i class="bi bi-wallet2"></i> Phiếu lương của tôi</h3>
+        <p>Lương tháng được tính từ số giờ công và ngày đi làm đã chấm công.</p>
+      </div>
+
+      <% if (!rows.length) { %>
+        <div class="salary-empty">Không có dữ liệu phiếu lương ở kỳ đã chọn.</div>
+      <% } else { %>
+        <div class="payslip-grid">
+          <% rows.forEach((row) => { %>
+            <article class="payslip-card">
+              <div class="payslip-head">
+                <h4>Tháng <%= row.ThangNam %></h4>
+                <span>CHI TIẾT</span>
+              </div>
+
+              <ul class="payslip-list">
+                <li>
+                  <span><i class="bi bi-calendar-check"></i> Ngày công</span>
+                  <strong><%= row.SoNgayCong %> ngày</strong>
+                </li>
+                <li>
+                  <span><i class="bi bi-clock-history"></i> Giờ công / OT</span>
+                  <strong><%= row.TongGioCong %>h / <%= row.TongGioOT %>h</strong>
+                </li>
+                <% if (hasContractFields) { %>
+                  <li>
+                    <span><i class="bi bi-graph-up"></i> Lương chính</span>
+                    <strong><%= row.LuongChinh %></strong>
+                  </li>
+                  <li>
+                    <span><i class="bi bi-lightning-charge-fill"></i> Lương OT</span>
+                    <strong><%= row.LuongOT %></strong>
+                  </li>
+                  <li>
+                    <span><i class="bi bi-briefcase-fill"></i> Phụ cấp</span>
+                    <strong><%= row.PhuCap %></strong>
+                  </li>
+                <% } %>
+                <li>
+                  <span><i class="bi bi-gift-fill"></i> Thưởng</span>
+                  <strong><%= row.Thuong %></strong>
+                </li>
+                <li>
+                  <span><i class="bi bi-dash-circle-fill"></i> Khấu trừ</span>
+                  <strong><%= row.KhauTru %></strong>
+                </li>
+                <li>
+                  <span><i class="bi bi-plus-circle-fill"></i> Tổng thu nhập</span>
+                  <strong><%= row.TongThuNhap %></strong>
+                </li>
+                <li>
+                  <span><i class="bi bi-slash-circle-fill"></i> Tổng khấu trừ</span>
+                  <strong><%= row.TongKhauTru %></strong>
+                </li>
+              </ul>
+
+              <div class="payslip-net">
+                <span>Thực lĩnh</span>
+                <strong><%= row.ThucNhan %></strong>
+              </div>
+            </article>
+          <% }) %>
+        </div>
+      <% } %>
+    </section>
+
+    <section class="salary-day-section">
+      <div class="payslip-title-wrap">
+        <h3><i class="bi bi-calendar-check"></i> Lương theo ngày chấm công</h3>
+        <p>Chi tiết tiền công từng ngày dựa trên trạng thái chấm công và giờ làm.</p>
+      </div>
+
+      <% if (!dailyRows.length) { %>
+        <div class="salary-empty">Không có ngày chấm công trong kỳ đã chọn.</div>
+      <% } else { %>
+        <div class="salary-table-wrap">
+          <table class="salary-table">
+            <thead>
+              <tr>
+                <th>Ngày</th>
+                <th>Thứ</th>
+                <th>Trạng thái</th>
+                <th>Giờ vào</th>
+                <th>Giờ công</th>
+                <th>Giờ OT</th>
+                <th>Lương công</th>
+                <th>Lương OT</th>
+                <th>Tổng ngày</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% dailyRows.forEach((row) => { %>
+                <tr>
+                  <td><strong><%= row.ngayText %></strong></td>
+                  <td><%= row.thuText %></td>
+                  <td>
+                    <span class="salary-day-status <%= row.statusClassName %>"><%= row.statusLabel %></span>
+                  </td>
+                  <td><%= row.checkInTimeText %></td>
+                  <td><%= row.workHours %>h</td>
+                  <td><%= row.otHours %>h</td>
+                  <td><%= new Intl.NumberFormat('vi-VN').format(row.luongGioCong) %> đ</td>
+                  <td><%= new Intl.NumberFormat('vi-VN').format(row.luongGioOT) %> đ</td>
+                  <td class="salary-net"><%= new Intl.NumberFormat('vi-VN').format(row.tongLuongNgay) %> đ</td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </section>
+
+    <footer class="salary-footer">
+      <div>
+        <span>Tổng giờ công: <strong><%= dailySummary.totalWorkHours %>h</strong></span>
+        <span>Tổng OT: <strong><%= dailySummary.totalOtHours %>h</strong></span>
+        <span>Tổng công theo ngày: <strong><%= dailySummary.totalGross %></strong></span>
+        <span>Tổng thưởng: <strong><%= summary.totalBonus %></strong></span>
+        <span>Tổng khấu trừ: <strong><%= summary.totalDeduction %></strong></span>
+      </div>
+      <a href="/user" class="salary-back"><i class="bi bi-arrow-left"></i> Quay lại dashboard</a>
+    </footer>
+  </section>
+<% } %>
+
+<%- include('partials/end') %>

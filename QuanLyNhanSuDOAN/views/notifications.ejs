@@ -1,0 +1,178 @@
+<%- include("partials/layoutStart", { title, entities }) %>
+
+<section class="page-header row">
+  <div>
+    <h1>Trung tâm bảng tin</h1>
+    <p>Tạo nhiều bảng tin theo chuyên mục và mức ưu tiên, đồng bộ tức thời cho toàn hệ thống</p>
+  </div>
+  <button class="btn" id="refresh-news-btn" type="button">Làm mới</button>
+</section>
+
+<div class="table-wrap">
+  <h2 class="section-title">Tạo bảng tin mới</h2>
+
+  <% if (createMessage) { %>
+    <p class="news-flash <%= createStatus === 'success' ? 'success' : 'error' %>"><%= createMessage %></p>
+  <% } %>
+
+  <form method="post" action="/admin/thongbao" class="news-create-form">
+    <label>
+      <span>Tiêu đề bảng tin *</span>
+      <input type="text" name="title" required maxlength="220" placeholder="Ví dụ: Cập nhật chính sách nghỉ phép Q2/2026" />
+    </label>
+
+    <label>
+      <span>Nội dung</span>
+      <textarea name="description" rows="4" maxlength="1000" placeholder="Mô tả ngắn, rõ ràng, có điểm hành động cụ thể cho nhân viên..."></textarea>
+    </label>
+
+    <div class="news-create-row">
+      <label>
+        <span>Nguồn</span>
+        <input type="text" name="source" maxlength="120" placeholder="Ví dụ: Phòng Nhân sự" />
+      </label>
+
+      <label>
+        <span>Chuyên mục</span>
+        <select name="category">
+          <option value="Noi bo">Nội bộ</option>
+          <option value="Chinh sach">Chính sách</option>
+          <option value="Dao tao">Đào tạo</option>
+          <option value="Su kien">Sự kiện</option>
+          <option value="Van hanh">Vận hành</option>
+        </select>
+      </label>
+
+      <label>
+        <span>Mức ưu tiên</span>
+        <select name="priority">
+          <option value="Thuong">Thường</option>
+          <option value="Quan trong">Quan trọng</option>
+          <option value="Khan cap">Khẩn cấp</option>
+        </select>
+      </label>
+
+      <label>
+        <span>Liên kết tham khảo (tuỳ chọn)</span>
+        <input type="url" name="url" maxlength="350" placeholder="https://..." />
+      </label>
+    </div>
+
+    <button type="submit" class="btn success"><i class="bi bi-plus-circle"></i> Thêm thông báo</button>
+  </form>
+</div>
+
+<div class="table-wrap">
+  <h2 class="section-title">Danh sách bảng tin đang hiển thị</h2>
+  <div class="news-kpi-grid" id="news-kpi-grid">
+    <article class="news-kpi-card">
+      <span>Tổng bản tin</span>
+      <strong id="kpi-total">0</strong>
+    </article>
+    <article class="news-kpi-card">
+      <span>Bản tin nội bộ</span>
+      <strong id="kpi-internal">0</strong>
+    </article>
+    <article class="news-kpi-card">
+      <span>Mức ưu tiên cao</span>
+      <strong id="kpi-high-priority">0</strong>
+    </article>
+  </div>
+  <div class="news-meta" id="news-meta">Đang tải dữ liệu...</div>
+  <div id="news-list" class="news-list"></div>
+</div>
+
+<script>
+  const newsListEl = document.getElementById("news-list");
+  const newsMetaEl = document.getElementById("news-meta");
+  const refreshBtn = document.getElementById("refresh-news-btn");
+  const kpiTotalEl = document.getElementById("kpi-total");
+  const kpiInternalEl = document.getElementById("kpi-internal");
+  const kpiHighPriorityEl = document.getElementById("kpi-high-priority");
+
+  function toSlug(value) {
+    return String(value || "")
+      .trim()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }
+
+  function getPriorityClass(priority) {
+    const slug = toSlug(priority);
+    if (slug.includes("khan-cap")) return "urgent";
+    if (slug.includes("quan-trong")) return "important";
+    return "normal";
+  }
+
+  function updateKpi(items) {
+    const total = items.length;
+    const internal = items.filter((item) => item.isInternal).length;
+    const highPriority = items.filter((item) => {
+      const slug = toSlug(item.priority);
+      return slug.includes("khan-cap") || slug.includes("quan-trong");
+    }).length;
+
+    kpiTotalEl.textContent = String(total);
+    kpiInternalEl.textContent = String(internal);
+    kpiHighPriorityEl.textContent = String(highPriority);
+  }
+
+  function formatDate(dateString) {
+    const d = new Date(dateString);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toLocaleString("vi-VN");
+  }
+
+  function renderNews(items) {
+    if (!items.length) {
+      newsListEl.innerHTML = "<p>Chưa có thông báo mới.</p>";
+      updateKpi([]);
+      return;
+    }
+
+    updateKpi(items);
+
+    newsListEl.innerHTML = items
+      .map((item) => `
+        <article class="news-item ${item.isInternal ? "internal" : "external"}">
+          <div class="news-headline-row">
+            <span class="news-chip">${item.category || "Nội bộ"}</span>
+            <span class="news-chip priority ${getPriorityClass(item.priority)}">${item.priority || "Thường"}</span>
+          </div>
+          <h3>${item.title}</h3>
+          <p class="news-desc">${item.description || "Nội dung đang được cập nhật."}</p>
+          <div class="news-info">
+            <span><i class="bi bi-building"></i> ${item.source}</span>
+            <span><i class="bi bi-clock"></i> ${formatDate(item.publishedAt)}</span>
+            ${item.url && item.url !== "#" ? `<a href="${item.url}" target="_blank" rel="noopener noreferrer">Xem nguồn</a>` : "<span>Thông báo nội bộ</span>"}
+          </div>
+        </article>
+      `)
+      .join("");
+  }
+
+  async function loadNews() {
+    newsMetaEl.textContent = "Đang tải dữ liệu...";
+    try {
+      const response = await fetch("/admin/api/thongbao-moi?limit=24");
+      if (!response.ok) {
+        throw new Error("Không thể tải API thông báo");
+      }
+
+      const data = await response.json();
+      newsMetaEl.textContent = `Đã cập nhật lúc ${formatDate(data.fetchedAt)} | Tổng ${data.count} bản tin`;
+      renderNews(data.items || []);
+    } catch (error) {
+      newsMetaEl.textContent = `Lỗi tải dữ liệu: ${error.message}`;
+      newsListEl.innerHTML = "";
+    }
+  }
+
+  refreshBtn.addEventListener("click", loadNews);
+  loadNews();
+</script>
+
+<%- include("partials/layoutEnd") %>

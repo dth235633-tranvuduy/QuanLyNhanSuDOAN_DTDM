@@ -1,0 +1,101 @@
+<%- include('partials/start', { title, activeMenu, employee }) %>
+
+<% if (!employee) { %>
+  <section class="hero empty">
+    <h1>Chưa có dữ liệu nhân viên</h1>
+    <p>Hãy thêm nhân viên từ khu vực quản trị để bắt đầu sử dụng cổng nhân viên.</p>
+  </section>
+<% } else { %>
+  <% const displayName = String(employee.HoTen || 'Nhân viên')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLocaleLowerCase('vi-VN')
+    .replace(/(^|\s)\S/g, (match) => match.toLocaleUpperCase('vi-VN')); %>
+  <% const nameWords = displayName.split(' ').filter(Boolean); %>
+  <% const initials = (nameWords[0]?.[0] || '') + (nameWords[nameWords.length - 1]?.[0] || ''); %>
+  <% const photoUrl = String(employee.HinhAnh || '').trim(); %>
+
+  <section class="workspace-home" id="ho-so-ca-nhan">
+    <aside class="workspace-profile">
+      <div class="workspace-avatar-shell">
+        <% if (photoUrl) { %>
+          <img src="<%= photoUrl %>" alt="Ảnh nhân viên <%= displayName %>" class="workspace-avatar" />
+        <% } else { %>
+          <div class="workspace-avatar-fallback"><%= initials || 'NV' %></div>
+        <% } %>
+      </div>
+
+      <div class="workspace-name-wrap">
+        <h1><%= displayName %></h1>
+        <span class="workspace-employee-id"><i class="bi bi-patch-check-fill"></i> <%= employee.MaNhanVien || '--' %></span>
+      </div>
+
+      <div class="workspace-profile-meta">
+        <span><i class="bi bi-buildings-fill"></i> <%= employee.TenPhongBan %></span>
+        <span><i class="bi bi-briefcase-fill"></i> <%= employee.TenChucVu %></span>
+      </div>
+
+      <div class="workspace-profile-time">
+        <div>
+          <label>Hôm nay</label>
+          <strong><%= todayLabel %></strong>
+        </div>
+        <div>
+          <label>Giờ hệ thống</label>
+          <strong><%= currentTime %></strong>
+        </div>
+      </div>
+    </aside>
+
+    <div class="workspace-main" id="cham-cong">
+      <header class="workspace-main-head">
+        <h2><i class="bi bi-grid-1x2-fill"></i> Không gian làm việc</h2>
+        <p>Truy cập nhanh các tác vụ chính trong ngày của bạn.</p>
+      </header>
+
+      <section class="workspace-shortcuts">
+        <% quickCards.forEach((card, idx) => { %>
+          <article class="workspace-shortcut-card">
+            <div class="workspace-shortcut-top">
+              <div class="workspace-shortcut-icon"><i class="bi <%= card.icon %>"></i></div>
+              <span class="workspace-shortcut-index">0<%= idx + 1 %></span>
+            </div>
+            <h3><%= card.title %></h3>
+            <p><%= card.subtitle %></p>
+            <a href="<%= card.href %>"><%= card.action %> <i class="bi bi-arrow-right-short"></i></a>
+          </article>
+        <% }) %>
+      </section>
+    </div>
+  </section>
+
+  <section class="workspace-news" id="bang-luong">
+    <div class="workspace-news-head">
+      <h2><i class="bi bi-megaphone-fill"></i> Bản tin nội bộ</h2>
+      <a href="/user/thongbao">Xem tất cả <i class="bi bi-chevron-right"></i></a>
+    </div>
+
+    <% if (!notifications.length) { %>
+      <div class="notice-empty">Chưa có thông báo mới trong ngày.</div>
+    <% } else { %>
+      <div class="workspace-news-timeline">
+        <% notifications.forEach((item) => { %>
+          <article class="workspace-news-item">
+            <div class="workspace-news-date"><%= new Date(item.publishedAt).toLocaleDateString('vi-VN') %></div>
+            <div class="workspace-news-body">
+              <h4><%= item.title %></h4>
+              <p><%= item.description || 'Xem chi tiết trong đường dẫn nguồn.' %></p>
+            </div>
+            <a href="<%= item.url %>" target="_blank" rel="noopener noreferrer">Mở</a>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
+  </section>
+
+  <div class="section-anchor" id="hop-dong"></div>
+  <div class="section-anchor" id="nghi-phep"></div>
+  <div class="section-anchor" id="phieu-luong"></div>
+<% } %>
+
+<%- include('partials/end') %>

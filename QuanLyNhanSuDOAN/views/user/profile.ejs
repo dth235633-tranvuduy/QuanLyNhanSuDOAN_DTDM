@@ -1,0 +1,99 @@
+<%- include('partials/start', { title, activeMenu, employee }) %>
+
+<% if (!profile) { %>
+  <section class="hero empty">
+    <h1>Không tìm thấy hồ sơ nhân viên</h1>
+    <p>Vui lòng liên hệ quản trị để đồng bộ dữ liệu hồ sơ.</p>
+  </section>
+<% } else { %>
+  <section class="profile-neo">
+    <header class="profile-neo-head">
+      <div class="profile-neo-avatar-wrap">
+        <div class="profile-neo-avatar-frame">
+          <% if (profile.HinhAnh) { %>
+            <img src="<%= profile.HinhAnh %>" alt="<%= profile.HoTen %>" class="profile-neo-avatar" />
+          <% } else { %>
+            <div class="profile-neo-avatar profile-neo-avatar-fallback">
+              <i class="bi bi-person-fill"></i>
+            </div>
+          <% } %>
+        </div>
+
+        <form
+          class="profile-avatar-form"
+          method="post"
+          action="/user/hoso/cap-nhat-anh"
+          enctype="multipart/form-data"
+        >
+          <label class="profile-avatar-file">
+            <input type="file" name="avatarFile" accept="image/*" required />
+          </label>
+          <button class="profile-avatar-submit" type="submit">
+            <i class="bi bi-upload"></i>
+            Đổi ảnh đại diện
+          </button>
+        </form>
+      </div>
+
+      <div class="profile-neo-identity">
+        <h1><%= profile.HoTen %></h1>
+        <p><i class="bi bi-person-workspace"></i> Hồ sơ nhân viên nội bộ</p>
+        <div class="profile-neo-tags">
+          <span><i class="bi bi-person-badge-fill"></i> <%= profile.MaNhanVien %></span>
+          <span><i class="bi bi-building-fill"></i> <%= profile.TenPhongBan %></span>
+          <span><i class="bi bi-briefcase-fill"></i> <%= profile.TenChucVu %></span>
+          <span><i class="bi bi-mortarboard-fill"></i> <%= profile.TenTrinhDo %></span>
+          <span><i class="bi bi-person-check-fill"></i> <%= profile.TrangThai %></span>
+        </div>
+      </div>
+    </header>
+
+    <% if (avatarUpdate?.message) { %>
+      <div class="profile-avatar-flash <%= avatarUpdate.isSuccess ? 'success' : 'error' %>">
+        <i class="bi <%= avatarUpdate.isSuccess ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill' %>"></i>
+        <span><%= avatarUpdate.message %></span>
+      </div>
+    <% } %>
+
+    <div class="profile-neo-grid">
+      <article class="profile-neo-card">
+        <h3><i class="bi bi-fingerprint"></i> Nhận diện</h3>
+        <dl>
+          <div><dt>Mã nhân viên</dt><dd><%= profile.MaNhanVien %></dd></div>
+          <div><dt>Họ và tên</dt><dd><%= profile.HoTen %></dd></div>
+          <div><dt>Ngày sinh</dt><dd><%= profile.NgaySinh %></dd></div>
+          <div><dt>Giới tính</dt><dd><%= profile.GioiTinh %></dd></div>
+          <div><dt>Số CCCD</dt><dd><%= profile.CCCD %></dd></div>
+        </dl>
+      </article>
+
+      <article class="profile-neo-card">
+        <h3><i class="bi bi-telephone-forward-fill"></i> Liên hệ</h3>
+        <dl>
+          <div><dt>Email</dt><dd><%= profile.Email %></dd></div>
+          <div><dt>Số điện thoại</dt><dd><%= profile.SoDienThoai %></dd></div>
+          <div><dt>Địa chỉ</dt><dd><%= profile.DiaChi %></dd></div>
+          <div><dt>Phòng ban</dt><dd><%= profile.TenPhongBan %></dd></div>
+          <div><dt>Ngày vào làm</dt><dd><%= profile.NgayVaoLam %></dd></div>
+        </dl>
+      </article>
+
+      <article class="profile-neo-card profile-neo-card-highlight">
+        <h3><i class="bi bi-award-fill"></i> Tổng quan công việc</h3>
+        <ul>
+          <li><label>Chức vụ hiện tại</label><strong><%= profile.TenChucVu %></strong></li>
+          <li><label>Trình độ</label><strong><%= profile.TenTrinhDo %></strong></li>
+          <li><label>Trạng thái hồ sơ</label><strong><%= profile.TrangThai %></strong></li>
+          <li><label>Ngày bắt đầu</label><strong><%= profile.NgayVaoLam %></strong></li>
+        </ul>
+      </article>
+    </div>
+
+    <footer class="profile-neo-actions">
+      <a href="/user" class="profile-neo-btn secondary"><i class="bi bi-arrow-left"></i> Về bảng điều khiển</a>
+      <a href="/user/thongbao" class="profile-neo-btn primary"><i class="bi bi-bell-fill"></i> Xem thông báo mới</a>
+    </footer>
+  </section>
+<% } %>
+
+<%- include('partials/end') %>

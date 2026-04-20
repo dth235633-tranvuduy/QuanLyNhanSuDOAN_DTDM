@@ -1,0 +1,141 @@
+<%- include('partials/start', { title, activeMenu, employee }) %>
+
+<% if (!employee) { %>
+  <section class="hero empty">
+    <h1>Không tìm thấy dữ liệu nhân viên</h1>
+    <p>Vui lòng liên hệ quản trị để cập nhật hồ sơ trước khi xem chấm công.</p>
+  </section>
+<% } else { %>
+  <section class="attendance-board" id="bang-cong">
+    <header class="attendance-header">
+      <div>
+        <h2><i class="bi bi-calendar-check-fill"></i> Bảng Chấm Công Cá Nhân</h2>
+        <p>Theo dõi trạng thái chấm công theo từng ngày từ dữ liệu hệ thống.</p>
+      </div>
+
+      <form class="attendance-filter" method="get" action="/user/cham-cong">
+        <label>
+          Tháng
+          <select name="thang" onchange="this.form.submit()">
+            <% for (let month = 1; month <= 12; month += 1) { %>
+              <option value="<%= month %>" <%= filters.thang === month ? 'selected' : '' %>><%= month %></option>
+            <% } %>
+          </select>
+        </label>
+
+        <label>
+          Năm
+          <select name="nam" onchange="this.form.submit()">
+            <% yearOptions.forEach((year) => { %>
+              <option value="<%= year %>" <%= filters.nam === year ? 'selected' : '' %>><%= year %></option>
+            <% }) %>
+          </select>
+        </label>
+      </form>
+    </header>
+
+    <section class="attendance-summary-grid">
+      <article>
+        <h4>Kỳ hiển thị</h4>
+        <p><%= filters.thang %>/<%= filters.nam %></p>
+      </article>
+      <article>
+        <h4>Tổng ngày trong tháng</h4>
+        <p><%= summary.totalDays %></p>
+      </article>
+      <article>
+        <h4>Ngày có công</h4>
+        <p><%= summary.totalPresent %></p>
+      </article>
+      <article>
+        <h4>Ngày nghỉ/vắng</h4>
+        <p><%= summary.totalOff %></p>
+      </article>
+    </section>
+
+    <section class="attendance-marked-days">
+      <h4>Ngày đã chấm công</h4>
+      <% if (!markedDays || !markedDays.length) { %>
+        <p>Chưa có dữ liệu chấm công trong kỳ này.</p>
+      <% } else { %>
+        <div class="attendance-day-chips">
+          <% markedDays.forEach((item) => { %>
+            <span
+              class="attendance-day-chip <%= item.className %> <%= item.checkInTimeText ? 'clickable' : '' %>"
+              data-attendance-day="<%= item.day %>"
+              data-checkin-time="<%= item.checkInTimeText || '' %>"
+            >
+              Ngày <%= item.day %> - <%= item.statusLabel %><%= item.checkInTimeText ? ` (${item.checkInTimeText})` : '' %>
+            </span>
+          <% }) %>
+        </div>
+      <% } %>
+      <p class="attendance-day-time-hint" data-attendance-day-info>Nhấn vào ô ngày có công để xem giờ chấm công.</p>
+    </section>
+
+    <% const calendarEmployeeRow = matrixRows[0] || null; %>
+    <section class="attendance-calendar" id="cham-cong">
+      <header class="attendance-calendar-head">
+        <div>
+          <h3><i class="bi bi-journal-richtext"></i> Lịch công tháng <%= filters.thang %>/<%= filters.nam %></h3>
+          <p>Hiển thị liên tục theo số ngày trong tháng, mỗi ngày một ô để theo dõi dễ hơn.</p>
+        </div>
+        <% if (calendarEmployeeRow) { %>
+          <span class="attendance-calendar-employee"><%= calendarEmployeeRow.MaNhanVien %> - <%= calendarEmployeeRow.HoTen %></span>
+        <% } %>
+      </header>
+
+      <% if (!calendarEmployeeRow || !calendarDays.length) { %>
+        <div class="attendance-empty">Không có dữ liệu chấm công ở kỳ đã chọn.</div>
+      <% } else { %>
+        <div class="attendance-calendar-grid">
+          <% calendarEmployeeRow.dayCells.forEach((cell) => { %>
+            <article
+              class="attendance-calendar-cell <%= cell.status.className %> <%= cell.isWeekend ? 'weekend' : '' %> <%= cell.checkInTimeText ? 'clickable' : '' %>"
+              data-attendance-day="<%= cell.day %>"
+              data-checkin-time="<%= cell.checkInTimeText || '' %>"
+            >
+              <div class="attendance-day-number"><%= cell.day %></div>
+              <div class="attendance-day-weekday"><%= cell.weekday %></div>
+              <div class="attendance-day-status"><%= cell.status.label %></div>
+            </article>
+          <% }) %>
+        </div>
+      <% } %>
+    </section>
+
+    <section class="attendance-legend">
+      <span><i class="attendance-swatch present"></i> Có công</span>
+      <span><i class="attendance-swatch off"></i> Nghỉ/Vắng</span>
+      <span><i class="attendance-swatch unknown"></i> Chưa cập nhật</span>
+    </section>
+
+    <footer class="attendance-footer">
+      <a href="/user" class="attendance-back"><i class="bi bi-arrow-left"></i> Quay lại dashboard</a>
+    </footer>
+  </section>
+<% } %>
+
+<script>
+  (function () {
+    const infoBox = document.querySelector('[data-attendance-day-info]');
+    if (!infoBox) return;
+
+    const clickableNodes = document.querySelectorAll('[data-checkin-time]');
+    clickableNodes.forEach((node) => {
+      node.addEventListener('click', () => {
+        const day = node.getAttribute('data-attendance-day') || '--';
+        const checkInTime = node.getAttribute('data-checkin-time') || '';
+
+        if (!checkInTime) {
+          infoBox.textContent = `Ngày ${day} chưa có giờ chấm công.`;
+          return;
+        }
+
+        infoBox.textContent = `Ngày ${day} đã chấm công lúc ${checkInTime}.`;
+      });
+    });
+  })();
+</script>
+
+<%- include('partials/end') %>

@@ -1,0 +1,102 @@
+<%- include('partials/start', { title, activeMenu, employee }) %>
+
+<section class="attendance-board" id="nghi-phep">
+  <header class="attendance-header">
+    <div>
+      <h2>Xin nghỉ online</h2>
+      <p>Tạo đơn xin nghỉ và theo dõi kết quả xét duyệt từ quản trị viên.</p>
+    </div>
+    <i class="bi bi-envelope-paper-heart"></i>
+  </header>
+
+  <% if (flash && flash.message) { %>
+    <div class="message-banner <%= flash.isSuccess ? 'success' : 'error' %>">
+      <i class="bi <%= flash.isSuccess ? 'bi-check-circle' : 'bi-exclamation-triangle' %>"></i>
+      <span><%= flash.message %></span>
+    </div>
+  <% } %>
+
+  <form class="leave-request-form" method="POST" action="/user/xin-nghi">
+    <div class="form-grid">
+      <label>
+        <span>Từ ngày <strong>*</strong></span>
+        <input type="date" name="tuNgay" min="<%= todayDate %>" required />
+      </label>
+      <label>
+        <span>Đến ngày <strong>*</strong></span>
+        <input type="date" name="denNgay" min="<%= todayDate %>" required />
+      </label>
+      <label>
+        <span>Loại nghỉ</span>
+        <select name="loaiNghi">
+          <option value="Nghi phep">Nghỉ phép</option>
+          <option value="Nghi om">Nghỉ ốm</option>
+          <option value="Nghi khong luong">Nghỉ không lương</option>
+          <option value="Khac">Khác</option>
+        </select>
+      </label>
+      <label class="full-width">
+        <span>Lý do <strong>*</strong></span>
+        <textarea name="lyDo" rows="4" placeholder="Nhập lý do xin nghỉ..." required></textarea>
+      </label>
+    </div>
+    <button type="submit" class="btn-primary">
+      <i class="bi bi-send"></i>
+      Gửi đơn xin nghỉ
+    </button>
+  </form>
+</section>
+
+<section class="attendance-board">
+  <header class="attendance-header">
+    <div>
+      <h3>Lịch sử đơn xin nghỉ</h3>
+      <p>Các đơn bạn đã gửi trên hệ thống.</p>
+    </div>
+  </header>
+
+  <% if (!leaveRows || !leaveRows.length) { %>
+    <div class="attendance-empty">
+      <i class="bi bi-inbox"></i>
+      <p>Bạn chưa gửi đơn xin nghỉ nào.</p>
+    </div>
+  <% } else { %>
+    <div class="attendance-table-wrap">
+      <table class="attendance-table leave-table">
+        <thead>
+          <tr>
+            <th>Mã đơn</th>
+            <th>Từ ngày</th>
+            <th>Đến ngày</th>
+            <th>Loại nghỉ</th>
+            <th>Trạng thái</th>
+            <th>Phản hồi</th>
+            <th>Ngày cập nhật</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% leaveRows.forEach((row) => { %>
+            <tr>
+              <td><strong><%= row.MaDonNghi %></strong></td>
+              <td><%= row.TuNgayText %></td>
+              <td><%= row.DenNgayText %></td>
+              <td><%= row.LoaiNghi || '--' %></td>
+              <td>
+                <span class="leave-status <%= row.StatusClassName %>"><%= row.StatusLabel %></span>
+              </td>
+              <td><%= row.PhanHoiAdmin || '--' %></td>
+              <td><%= row.NgayCapNhatText || row.NgayTaoText %></td>
+            </tr>
+            <tr>
+              <td colspan="7" class="leave-reason">
+                <strong>Lý do:</strong> <%= row.LyDo || '--' %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
+
+<%- include('partials/end') %>

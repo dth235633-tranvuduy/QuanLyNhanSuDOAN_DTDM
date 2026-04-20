@@ -1,0 +1,68 @@
+<%- include("partials/layoutStart", { title, entities }) %>
+
+<section class="page-header row">
+  <div>
+    <h1>Bảng công theo tháng</h1>
+    <p>Theo dõi kỳ chấm công và xem chi tiết toàn bộ nhân viên.</p>
+  </div>
+  <a class="btn" href="/admin/chamcong">Quay lại CRUD chấm công</a>
+</section>
+
+<div class="table-wrap">
+  <form class="attendance-filter" method="get" action="/admin/bang-cong">
+    <label>
+      <span>Tháng</span>
+      <input type="number" name="thang" min="1" max="12" value="<%= selectedThang %>" />
+    </label>
+    <label>
+      <span>Năm</span>
+      <input type="number" name="nam" min="2000" max="3000" value="<%= selectedNam %>" />
+    </label>
+    <div class="filter-actions">
+      <button class="btn" type="submit">Tìm kiếm</button>
+      <a class="btn ghost" href="/admin/bang-cong">Xóa bộ lọc</a>
+    </div>
+  </form>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Tháng</th>
+        <th>Năm</th>
+        <th>Số nhân viên có dữ liệu</th>
+        <th>Trạng thái</th>
+        <th>Thao tác</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (!monthSummaries.length) { %>
+        <tr>
+          <td colspan="5">Chưa có kỳ chấm công nào.</td>
+        </tr>
+      <% } %>
+
+      <% monthSummaries.forEach((item) => { %>
+        <tr>
+          <td><%= item.thang %></td>
+          <td><%= item.nam %></td>
+          <td><%= item.isSelected ? employeeCount : '-' %></td>
+          <td>
+            <span class="status-pill"><%= item.isOpen ? 'Đang mở' : 'Đã khóa' %></span>
+          </td>
+          <td>
+            <div class="actions">
+              <a class="btn small ghost" href="/admin/bang-cong/<%= item.nam %>/<%= item.thang %>">Xem chi tiết</a>
+              <form method="post" action="/admin/bang-cong/<%= item.nam %>/<%= item.thang %>/toggle" onsubmit="return confirm('Bạn chắc chắn muốn đổi trạng thái kỳ chấm công?')">
+                <button class="btn small" type="submit"><%= item.isOpen ? 'Khóa kỳ' : 'Mở kỳ' %></button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<%- include("partials/layoutEnd") %>

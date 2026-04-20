@@ -1,0 +1,478 @@
+<%- include("partials/layoutStart", { title, entities }) %>
+
+<%
+  const safeAttendanceFilters =
+    typeof attendanceFilters !== "undefined" && attendanceFilters
+      ? attendanceFilters
+      : { ngay: "" };
+  const safeAttendanceDetailRows =
+    typeof attendanceDetailRows !== "undefined" && attendanceDetailRows
+      ? attendanceDetailRows
+      : [];
+  const safeNhanVienRows =
+    typeof nhanVienRows !== "undefined" && nhanVienRows
+      ? nhanVienRows
+      : [];
+  const safeLuongNhanVienRows =
+    typeof luongNhanVienRows !== "undefined" && luongNhanVienRows
+      ? luongNhanVienRows
+      : [];
+  const safeNhanVienFilters =
+    typeof nhanVienFilters !== "undefined" && nhanVienFilters
+      ? nhanVienFilters
+      : { keyword: "", maPhongBan: "", maChucVu: "" };
+  const safeNhanVienFilterOptions =
+    typeof nhanVienFilterOptions !== "undefined" && nhanVienFilterOptions
+      ? nhanVienFilterOptions
+      : { phongBan: [], chucVu: [] };
+  const safeLuongFilters =
+    typeof luongFilters !== "undefined" && luongFilters
+      ? luongFilters
+      : { thangNam: "" };
+  const safeLuongPrintOptions =
+    typeof luongPrintOptions !== "undefined" && luongPrintOptions
+      ? luongPrintOptions
+      : { printAll: false };
+  const safeOperationNotice =
+    typeof operationNotice !== "undefined" ? String(operationNotice || "") : "";
+  const payrollGroupOrder = [];
+  const payrollGroups = {};
+  safeLuongNhanVienRows.forEach((row) => {
+    const key = `${row.Thang}/${row.Nam}`;
+    if (!payrollGroups[key]) {
+      payrollGroups[key] = [];
+      payrollGroupOrder.push(key);
+    }
+    payrollGroups[key].push(row);
+  });
+  const normalizeStatusClass = (status) => {
+    const text = String(status || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+    if (/di\s*lam|co\s*cong|present/.test(text)) return "present";
+    if (/nghi|vang|off|absent/.test(text)) return "off";
+    return "unknown";
+  };
+  const formatNumberComma = (value) => {
+    const parsed = Number(value || 0);
+    if (!Number.isFinite(parsed)) return "0";
+    return new Intl.NumberFormat('en-US').format(parsed);
+  };
+%>
+
+<section class="page-header row">
+  <div>
+    <h1><%= entity.label %></h1>
+    <p>Danh sách dữ liệu</p>
+  </div>
+  <div class="filter-actions">
+    <% if (entityName === "chamcong") { %>
+      <a class="btn ghost" href="/admin/bang-cong">Bảng công theo tháng</a>
+    <% } %>
+    <% if (entityName !== "luongnhanvien" && entityName !== "donxinnghi" && entityName !== "nhanvien") { %>
+      <a class="btn" href="/admin/<%= entityName %>/new">Thêm mới</a>
+    <% } else { %>
+      <% if (entityName === "luongnhanvien") { %>
+        <button
+          class="btn"
+          type="button"
+          onclick="window.open('/admin/luongnhanvien?printAll=1', '_blank')"
+        >
+          <i class="bi bi-printer-fill"></i> In tất cả tháng
+        </button>
+      <% } %>
+    <% } %>
+  </div>
+</section>
+
+<% if (safeOperationNotice) { %>
+  <p class="admin-inline-notice"><i class="bi bi-info-circle-fill"></i> <%= safeOperationNotice %></p>
+<% } %>
+
+<% if (entityName === "nhanvien") { %>
+  <section class="employee-actions-bar">
+    <a class="btn" href="/admin/<%= entityName %>/new"><i class="bi bi-plus-lg"></i> Thêm nhân viên</a>
+  </section>
+
+  <section class="employee-filter-wrap">
+    <form class="employee-filter-form" method="get" action="/admin/nhanvien">
+      <label>
+        <span><i class="bi bi-search"></i> Tìm nhân viên</span>
+        <input type="text" name="keyword" placeholder="Mã NV, họ tên, email, CCCD, số điện thoại" value="<%= safeNhanVienFilters.keyword %>" />
+      </label>
+
+      <label>
+        <span><i class="bi bi-building"></i> Phòng ban</span>
+        <select name="maPhongBan">
+          <option value="">-- Tất cả --</option>
+          <% safeNhanVienFilterOptions.phongBan.forEach((item) => { %>
+            <option value="<%= item.MaPhongBan %>" <%= safeNhanVienFilters.maPhongBan === item.MaPhongBan ? 'selected' : '' %>>
+              <%= item.TenPhongBan %>
+            </option>
+          <% }) %>
+        </select>
+      </label>
+
+      <label>
+        <span><i class="bi bi-briefcase-fill"></i> Chức vụ</span>
+        <select name="maChucVu">
+          <option value="">-- Tất cả --</option>
+          <% safeNhanVienFilterOptions.chucVu.forEach((item) => { %>
+            <option value="<%= item.MaChucVu %>" <%= safeNhanVienFilters.maChucVu === item.MaChucVu ? 'selected' : '' %>>
+              <%= item.TenChucVu %>
+            </option>
+          <% }) %>
+        </select>
+      </label>
+
+      <div class="employee-filter-actions">
+        <button class="btn" type="submit"><i class="bi bi-search"></i> Tìm kiếm</button>
+        <a class="btn steel" href="/admin/nhanvien"><i class="bi bi-x-lg"></i> Xóa bộ lọc</a>
+      </div>
+    </form>
+  </section>
+
+  <div class="table-wrap employee-table-wrap data-grid-card">
+    <table class="employee-table admin-data-table">
+      <thead>
+        <tr>
+          <th>Ảnh</th>
+          <th>Mã nhân viên</th>
+          <th>Họ tên</th>
+          <th>Ngày sinh</th>
+          <th>Giới tính</th>
+          <th>CCCD</th>
+          <th>Email</th>
+          <th>Phòng ban</th>
+          <th>Chức vụ</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!safeNhanVienRows.length) { %>
+          <tr>
+            <td colspan="10">Không có dữ liệu nhân viên</td>
+          </tr>
+        <% } %>
+        <% safeNhanVienRows.forEach((row) => { %>
+          <tr>
+            <td>
+              <% if (row.HinhAnh) { %>
+                <img class="employee-avatar" src="<%= row.HinhAnh %>" alt="<%= row.HoTen || row.MaNhanVien %>" />
+              <% } else { %>
+                <div class="employee-avatar placeholder">
+                  <i class="bi bi-person-fill"></i>
+                </div>
+              <% } %>
+            </td>
+            <td><%= row.MaNhanVien %></td>
+            <td><%= row.HoTen || '' %></td>
+            <td><%= formatDate(row.NgaySinh) %></td>
+            <td><%= row.GioiTinh || '' %></td>
+            <td><%= row.CCCD || '' %></td>
+            <td><%= row.Email || '' %></td>
+            <td><%= row.TenPhongBan || row.MaPhongBan || '' %></td>
+            <td><%= row.TenChucVu || row.MaChucVu || '' %></td>
+            <td>
+              <div class="actions">
+                <a class="btn small" href="/admin/<%= entityName %>/<%= row[keyField] %>/edit">Sửa</a>
+                <form action="/admin/<%= entityName %>/<%= row[keyField] %>/delete" method="post" onsubmit="return confirm('Bạn chắc chắn muốn xóa?')">
+                  <button class="btn danger small" type="submit">Xóa</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } else if (entityName === "chamcong") { %>
+  <div class="table-wrap data-grid-card">
+    <h2 class="sub-title">Bảng chi tiết chấm công</h2>
+    <form class="attendance-filter" method="get" action="/admin/chamcong">
+      <label>
+        <span>Ngày công</span>
+        <input type="date" name="ngay" value="<%= safeAttendanceFilters.ngay || '' %>" />
+      </label>
+      <div class="filter-actions">
+        <button class="btn small" type="submit">Lọc theo ngày</button>
+        <a class="btn ghost small" href="/admin/chamcong">Xóa lọc</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="table-wrap data-grid-card">
+    <table class="admin-data-table">
+      <thead>
+        <tr>
+          <th>Mã chấm công</th>
+          <th>Mã nhân viên</th>
+          <th>Họ tên</th>
+          <th>Ngày công</th>
+          <th>Trạng thái chấm công</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!safeAttendanceDetailRows.length) { %>
+          <tr>
+            <td colspan="6">Không có dữ liệu</td>
+          </tr>
+        <% } %>
+        <% safeAttendanceDetailRows.forEach((row) => { %>
+          <tr>
+            <td><%= row.MaChamCong %></td>
+            <td><%= row.MaNhanVien %></td>
+            <td><%= row.HoTen || '-' %></td>
+            <td><%= formatDate(row.NgayCong) %></td>
+            <td>
+              <span class="status-badge <%= normalizeStatusClass(row.TrangThai_ChamCong) %>">
+                <%= row.TrangThai_ChamCong || '' %>
+              </span>
+            </td>
+            <td>
+              <div class="actions">
+                <a class="btn small" href="/admin/<%= entityName %>/<%= row[keyField] %>/edit">Sửa</a>
+                <form action="/admin/<%= entityName %>/<%= row[keyField] %>/delete" method="post" onsubmit="return confirm('Bạn chắc chắn muốn xóa?')">
+                  <button class="btn danger small" type="submit">Xóa</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } else if (entityName === "luongnhanvien") { %>
+  <section class="payroll-print-zone">
+  <div class="table-wrap data-grid-card payroll-screen-controls">
+    <h2 class="sub-title">Lọc bảng lương theo tháng</h2>
+    <form class="attendance-filter" method="get" action="/admin/luongnhanvien">
+      <label>
+        <span>Tháng/Năm</span>
+        <input type="month" name="thangNam" value="<%= safeLuongFilters.thangNam || '' %>" />
+      </label>
+      <div class="filter-actions">
+        <button class="btn small" type="submit">Lọc theo tháng</button>
+        <a class="btn ghost small" href="/admin/luongnhanvien">Xóa lọc</a>
+        <button class="btn steel small" type="button" onclick="window.print()"><i class="bi bi-printer-fill"></i> In tháng đang lọc</button>
+      </div>
+    </form>
+  </div>
+
+  <% if (!safeLuongNhanVienRows.length) { %>
+    <div class="table-wrap data-grid-card">
+      <table class="admin-data-table">
+        <tbody>
+          <tr>
+            <td>Không có dữ liệu bảng lương</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+  <% payrollGroupOrder.forEach((periodKey) => { %>
+    <% const periodRows = payrollGroups[periodKey] || []; %>
+    <% const [periodMonth, periodYear] = String(periodKey).split('/'); %>
+    <% const periodTotalThucNhan = periodRows.reduce((sum, item) => sum + Number(item.ThucNhan || 0), 0); %>
+    <% const periodTotalKhauTru = periodRows.reduce((sum, item) => sum + Number(item.TongKhauTru || 0), 0); %>
+    <% const periodTotalPhuCap = periodRows.reduce((sum, item) => sum + Number(item.PhuCap || 0), 0); %>
+    <% const printDateText = new Date().toLocaleDateString('vi-VN'); %>
+
+    <div class="table-wrap data-grid-card payroll-sheet">
+      <header class="payroll-doc-header print-only">
+        <div class="payroll-doc-col-left">
+          <h3>CÔNG TY TNHH SEVENTIME HRMS</h3>
+          <p>Mã số thuế: 0000000000</p>
+          <p>Địa chỉ: Long Xuyên, An Giang</p>
+        </div>
+        <div class="payroll-doc-col-right">
+          <h3>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h3>
+          <p>Độc lập - Tự do - Hạnh phúc</p>
+          <span>Ngày in: <%= printDateText %></span>
+        </div>
+      </header>
+
+      <div class="payroll-doc-title print-only">
+        <h2>BẢNG LƯƠNG THÁNG <%= periodMonth %>/<%= periodYear %></h2>
+        <p>Đơn vị tính: Đồng</p>
+      </div>
+
+      <h2 class="sub-title">Bảng lương tháng <%= periodKey %></h2>
+      <table class="admin-data-table">
+        <thead>
+          <tr>
+            <th>Mã bảng lương</th>
+            <th>Mã nhân viên</th>
+            <th>Họ tên</th>
+            <th>Tháng/Năm</th>
+            <th>Ngày công</th>
+            <th>Giờ công / OT</th>
+            <th>Lương chính</th>
+            <th>Phụ cấp</th>
+            <th>Thưởng</th>
+            <th>Khấu trừ khác</th>
+            <th>Tổng khấu trừ</th>
+            <th>Thực lĩnh</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% periodRows.forEach((row) => { %>
+            <tr>
+              <td><%= row.MaBangLuong %></td>
+              <td><%= row.MaNhanVien %></td>
+              <td><%= row.HoTen || '-' %></td>
+              <td><%= row.Thang %>/<%= row.Nam %></td>
+              <td><%= row.SoNgayCongTinh %></td>
+              <td><%= row.TongGioCong %>h / <%= row.TongGioOT %>h</td>
+              <td><%= formatNumberComma(row.LuongChinh || 0) %></td>
+              <td><%= formatNumberComma(row.PhuCap || 0) %></td>
+              <td><%= formatNumberComma(row.Thuong || 0) %></td>
+              <td><%= formatNumberComma(row.KhauTru || 0) %></td>
+              <td><%= formatNumberComma(row.TongKhauTru || 0) %></td>
+              <td><strong><%= formatNumberComma(row.ThucNhan || 0) %></strong></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+
+      <div class="payroll-sheet-summary print-only">
+        <div><span>Tổng phụ cấp:</span><strong><%= formatNumberComma(periodTotalPhuCap) %> đ</strong></div>
+        <div><span>Tổng khấu trừ:</span><strong><%= formatNumberComma(periodTotalKhauTru) %> đ</strong></div>
+        <div><span>Tổng thực lĩnh:</span><strong><%= formatNumberComma(periodTotalThucNhan) %> đ</strong></div>
+      </div>
+
+      <footer class="payroll-signatures print-only">
+        <div>
+          <h4>Người lập biểu</h4>
+          <p>(Ký, ghi rõ họ tên)</p>
+        </div>
+        <div>
+          <h4>Kế toán</h4>
+          <p>(Ký, ghi rõ họ tên)</p>
+        </div>
+        <div>
+          <h4>Giám đốc</h4>
+          <p>(Ký, đóng dấu)</p>
+        </div>
+      </footer>
+    </div>
+  <% }); %>
+
+  <% if (safeLuongPrintOptions.printAll) { %>
+    <script>
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          window.print();
+        }, 180);
+      });
+    </script>
+  <% } %>
+  </section>
+<% } else if (entityName === "donxinnghi") { %>
+  <div class="table-wrap data-grid-card">
+    <table class="admin-data-table">
+      <thead>
+        <tr>
+          <th>Mã đơn</th>
+          <th>Tên nhân viên</th>
+          <th>Từ ngày</th>
+          <th>Đến ngày</th>
+          <th>Loại nghỉ</th>
+          <th>Lý do</th>
+          <th>Trạng thái</th>
+          <th>Ngày cập nhật</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!rows.length) { %>
+          <tr>
+            <td colspan="9">Không có dữ liệu</td>
+          </tr>
+        <% } %>
+        <% rows.forEach((row) => { %>
+          <% const leaveStatusText = String(row.TrangThaiDon || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); %>
+          <% const isApproved = /\bda\s*duyet\b|\bapproved\b/.test(leaveStatusText); %>
+          <% const isRejected = /\btu\s*choi\b|\breject(ed)?\b/.test(leaveStatusText); %>
+          <% const isFinalized = isApproved || isRejected; %>
+          <tr>
+            <td><%= row.MaDonNghi %></td>
+            <td><%= row.HoTen || '-' %></td>
+            <td><%= formatDate(row.TuNgay) %></td>
+            <td><%= formatDate(row.DenNgay) %></td>
+            <td><%= row.LoaiNghi || '' %></td>
+            <td><%= row.LyDo || '' %></td>
+            <td><%= row.TrangThaiDon || '' %></td>
+            <td><%= formatDate(row.NgayCapNhat || row.NgayTao) %></td>
+            <td>
+              <div class="actions">
+                <% if (!isFinalized) { %>
+                  <form action="/admin/donxinnghi/<%= row.MaDonNghi %>/duyet" method="post" onsubmit="return confirm('Xác nhận đồng ý đơn nghỉ này?')">
+                    <button class="btn small" type="submit">Đồng ý</button>
+                  </form>
+                  <form action="/admin/donxinnghi/<%= row.MaDonNghi %>/khong-dong-y" method="post" onsubmit="return confirm('Xác nhận không đồng ý đơn nghỉ này?')">
+                    <button class="btn steel small" type="submit">Không đồng ý</button>
+                  </form>
+                <% } %>
+                <form action="/admin/donxinnghi/<%= row.MaDonNghi %>/delete" method="post" onsubmit="return confirm('Bạn chắc chắn muốn xóa?')">
+                  <button class="btn danger small" type="submit">Xóa</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } else { %>
+  <div class="table-wrap data-grid-card">
+    <table class="admin-data-table">
+      <thead>
+        <tr>
+          <% fields.forEach((field) => { %>
+            <th><%= field.label %></th>
+          <% }); %>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!rows.length) { %>
+          <tr>
+            <td colspan="<%= fields.length + 1 %>">Không có dữ liệu</td>
+          </tr>
+        <% } %>
+        <% rows.forEach((row) => { %>
+          <tr>
+            <% fields.forEach((field) => { %>
+              <td>
+                <% if (field.name === "MatKhau") { %>
+                  ******
+                <% } else if (field.instance === "Date") { %>
+                  <%= formatDate(row[field.name]) %>
+                <% } else if (field.instance === "Number") { %>
+                  <%= formatNumberComma(row[field.name]) %>
+                <% } else { %>
+                  <%= row[field.name] %>
+                <% } %>
+              </td>
+            <% }); %>
+            <td>
+              <div class="actions">
+                <% if (entityName !== 'hopdong' && entityName !== 'donxinnghi') { %>
+                  <a class="btn small" href="/admin/<%= entityName %>/<%= row[keyField] %>/edit">Sửa</a>
+                <% } %>
+                <form action="/admin/<%= entityName %>/<%= row[keyField] %>/delete" method="post" onsubmit="return confirm('Bạn chắc chắn muốn xóa?')">
+                  <button class="btn danger small" type="submit">Xóa</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+
+<%- include("partials/layoutEnd") %>

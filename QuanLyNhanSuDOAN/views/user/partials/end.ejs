@@ -1,0 +1,64 @@
+  </main>
+
+  <footer class="user-footer">
+    <div class="footer-grid">
+      <div>
+        <h4>SevenTime HRMS</h4>
+        <p>Nền tảng quản trị nhân sự hiện đại giúp doanh nghiệp theo dõi công việc minh bạch và tăng hiệu suất vận hành.</p>
+      </div>
+      <div>
+        <h4>Thông tin liên hệ</h4>
+        <ul>
+          <li><i class="bi bi-telephone-fill"></i> 0867797713</li>
+          <li><i class="bi bi-envelope-fill"></i> tvduy21112005@gamil.com</li>
+          <li><i class="bi bi-chat-dots-fill"></i> Zalo: 0867797713</li>
+          <li><i class="bi bi-facebook"></i> Facebook: fb.com/seventime.hrms</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-certifications">
+      <span>Giấy chứng nhận ISO 9001:2015</span>
+      <span>Tiêu chuẩn quản lý chất lượng</span>
+      <span>Đối tác số hóa doanh nghiệp Việt</span>
+    </div>
+    <div class="footer-bottom">© 2026 SevenTime HRMS. Đồng bộ dữ liệu - Bảo mật - Chính xác.</div>
+  </footer>
+
+  <script>
+    (function () {
+      const topbar = document.querySelector(".user-topbar");
+      const toggleBtn = document.querySelector(".menu-toggle");
+      const nav = document.querySelector("#userMainNav");
+
+      if (!topbar || !toggleBtn || !nav) {
+        return;
+      }
+
+      function closeMenu() {
+        topbar.classList.remove("menu-open");
+        toggleBtn.setAttribute("aria-expanded", "false");
+      }
+
+      toggleBtn.addEventListener("click", function () {
+        const willOpen = !topbar.classList.contains("menu-open");
+        topbar.classList.toggle("menu-open", willOpen);
+        toggleBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+      });
+
+      nav.querySelectorAll("a").forEach(function (link) {
+        link.addEventListener("click", function () {
+          if (window.innerWidth <= 1280) {
+            closeMenu();
+          }
+        });
+      });
+
+      window.addEventListener("resize", function () {
+        if (window.innerWidth > 1280) {
+          closeMenu();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

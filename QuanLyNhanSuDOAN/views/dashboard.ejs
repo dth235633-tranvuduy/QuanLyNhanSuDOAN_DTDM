@@ -1,0 +1,89 @@
+<%- include("partials/layoutStart", { title, entities }) %>
+
+<section class="page-header">
+  <h1>Dashboard</h1>
+  <p>Trang quản trị hệ thống nhân sự</p>
+</section>
+
+<section class="cards">
+  <article class="card">
+    <h3>Tổng nhân viên</h3>
+    <p class="value"><%= stats.totalNhanVien %></p>
+  </article>
+  <article class="card">
+    <h3>Đang làm việc</h3>
+    <p class="value"><%= stats.dangLamViec %></p>
+  </article>
+  <article class="card">
+    <h3>Phòng ban</h3>
+    <p class="value"><%= stats.totalPhongBan %></p>
+  </article>
+  <article class="card">
+    <h3>Bảng lương tháng này</h3>
+    <p class="value"><%= stats.luongThangNay %></p>
+  </article>
+</section>
+
+<section class="quick-links">
+  <h2>Quản lý nhanh</h2>
+  <div class="quick-grid">
+    <% Object.entries(entities).forEach(([key, entity]) => { %>
+      <a class="quick-item" href="/admin/<%= key %>"><%= entity.label %></a>
+    <% }); %>
+  </div>
+</section>
+
+<section class="quick-links">
+  <h2>Thông báo mới trong ngày</h2>
+  <div class="table-wrap">
+    <div class="news-meta" id="dashboard-news-meta">Đang tải dữ liệu...</div>
+    <div id="dashboard-news-list" class="news-list"></div>
+    <a class="btn ghost" href="/admin/thongbao">Xem toàn bộ thông báo</a>
+  </div>
+</section>
+
+<script>
+  const dashNewsMetaEl = document.getElementById("dashboard-news-meta");
+  const dashNewsListEl = document.getElementById("dashboard-news-list");
+
+  function fmtDate(dateString) {
+    const d = new Date(dateString);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toLocaleString("vi-VN");
+  }
+
+  function renderDashNews(items) {
+    if (!items.length) {
+      dashNewsListEl.innerHTML = "<p>Chưa có thông báo mới.</p>";
+      return;
+    }
+
+    dashNewsListEl.innerHTML = items
+      .slice(0, 4)
+      .map((item) => `
+        <article class="news-item">
+          <h3>${item.title}</h3>
+          <div class="news-info">
+            <span><i class="bi bi-building"></i> ${item.source}</span>
+            <span><i class="bi bi-clock"></i> ${fmtDate(item.publishedAt)}</span>
+          </div>
+        </article>
+      `)
+      .join("");
+  }
+
+  (async () => {
+    try {
+      const response = await fetch("/admin/api/thongbao-moi?limit=4");
+      if (!response.ok) throw new Error("Lỗi API");
+      const data = await response.json();
+      dashNewsMetaEl.textContent = `Cập nhật lúc ${fmtDate(data.fetchedAt)}`;
+      renderDashNews(data.items || []);
+    } catch (error) {
+      dashNewsMetaEl.textContent = "Không tải được thông báo mới.";
+      dashNewsListEl.innerHTML = "";
+    }
+  })();
+</script>
+
+<%- include("partials/layoutEnd") %>

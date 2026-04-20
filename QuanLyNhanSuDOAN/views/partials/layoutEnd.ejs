@@ -1,0 +1,82 @@
+    </main>
+
+    <footer class="global-footer admin-footer">
+      <div class="footer-grid">
+        <div>
+          <h4>SevenTime HRMS</h4>
+          <p>Nền tảng quản trị nhân sự số hóa hồ sơ, chấm công, lương và hợp đồng cho doanh nghiệp Việt Nam.</p>
+        </div>
+        <div>
+          <h4>Liên hệ</h4>
+          <ul>
+            <li><i class="bi bi-telephone-fill"></i> 0867797713</li>
+            <li><i class="bi bi-envelope-fill"></i> tvduy21112005@gamil.com</li>
+            <li><i class="bi bi-chat-dots-fill"></i> Zalo: 0867797713</li>
+            <li><i class="bi bi-facebook"></i> Facebook: fb.com/seventime.hrms</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-certifications">
+        <span>Giấy chứng nhận ISO 9001:2015</span>
+        <span>Tiêu chuẩn bảo mật dữ liệu nội bộ</span>
+        <span>Đăng ký kinh doanh hợp lệ</span>
+      </div>
+      <div class="footer-bottom">© <%= new Date().getFullYear() %> SevenTime HRMS. All rights reserved.</div>
+    </footer>
+  </div>
+  <script>
+    const menuGroups = Array.from(document.querySelectorAll("[data-menu-group]"));
+    const currentPath = window.location.pathname.replace(/\/$/, "") || "/";
+
+    function normalizePath(path) {
+      return (path || "").replace(/\/$/, "") || "/";
+    }
+
+    document.querySelectorAll(".sidebar nav a[href]").forEach((link) => {
+      const hrefPath = normalizePath(new URL(link.href, window.location.origin).pathname);
+      if (hrefPath === currentPath) {
+        link.classList.add("is-active");
+        const parentGroup = link.closest("[data-menu-group]");
+        if (parentGroup) {
+          parentGroup.classList.add("has-active");
+        }
+      }
+    });
+
+    menuGroups.forEach((group) => {
+      const toggle = group.querySelector(".menu-group-toggle");
+
+      toggle.addEventListener("click", () => {
+        const willOpen = group.classList.contains("is-collapsed");
+
+        menuGroups.forEach((otherGroup) => {
+          const otherToggle = otherGroup.querySelector(".menu-group-toggle");
+          otherGroup.classList.add("is-collapsed");
+          otherToggle.setAttribute("aria-expanded", "false");
+        });
+
+        if (willOpen) {
+          group.classList.remove("is-collapsed");
+          toggle.setAttribute("aria-expanded", "true");
+        }
+      });
+
+      if (!group.classList.contains("is-collapsed")) {
+        toggle.setAttribute("aria-expanded", "true");
+      }
+    });
+
+    document.querySelectorAll(".menu-items a, .menu-items button").forEach((menuAction) => {
+      menuAction.addEventListener("click", () => {
+        menuGroups.forEach((group) => {
+          const groupToggle = group.querySelector(".menu-group-toggle");
+          group.classList.add("is-collapsed");
+          if (groupToggle) {
+            groupToggle.setAttribute("aria-expanded", "false");
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

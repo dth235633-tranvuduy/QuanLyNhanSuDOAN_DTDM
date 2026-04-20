@@ -1,0 +1,110 @@
+<%- include("partials/layoutStart", { title, entities }) %>
+
+<section class="page-header row">
+  <div>
+    <h1>Xem chi tiết bảng công</h1>
+    <p>Bảng công tháng <strong><%= thang %>/<%= nam %></strong> - Tổng số nhân viên: <strong><%= totalEmployees %></strong></p>
+  </div>
+  <div class="filter-actions">
+    <a class="btn ghost" href="/admin/bang-cong">Quay lại</a>
+    <a class="btn" href="/admin/bang-cong/<%= nam %>/<%= thang %>">Làm mới</a>
+  </div>
+</section>
+
+<div class="table-wrap attendance-matrix-wrap">
+  <table class="attendance-matrix-table">
+    <thead>
+      <tr>
+        <th>Mã nhân viên</th>
+        <th>Họ tên</th>
+        <th>Phòng ban</th>
+        <% calendarDays.forEach((day) => { %>
+          <th class="<%= day.isWeekend ? 'matrix-weekend' : '' %>">
+            <div><%= day.dateLabel %></div>
+            <small><%= day.weekday %></small>
+          </th>
+        <% }) %>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (!rows.length) { %>
+        <tr>
+          <td colspan="<%= calendarDays.length + 3 %>">Không có dữ liệu.</td>
+        </tr>
+      <% } %>
+
+      <% rows.forEach((row) => { %>
+        <tr>
+          <td><%= row.MaNhanVien %></td>
+          <td><%= row.HoTen %></td>
+          <td><%= row.TenPhongBan || '-' %></td>
+          <% row.dayCells.forEach((cell) => { %>
+            <td class="matrix-cell <%= cell.status.className %>"><%= cell.status.label %></td>
+          <% }) %>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<p class="attendance-scroll-hint">Kéo ngang bảng điểm danh để xem các ngày phía sau.</p>
+
+<div class="table-wrap attendance-static-wrap attendance-legend-admin">
+  <span><i class="attendance-swatch present"></i> Có công</span>
+  <span><i class="attendance-swatch off"></i> Nghỉ/Vắng</span>
+  <span><i class="attendance-swatch unknown"></i> Chưa cập nhật</span>
+</div>
+
+<div class="table-wrap attendance-static-wrap">
+  <h2 class="sub-title">Điều chỉnh công để tính lương (<%= thang %>/<%= nam %>)</h2>
+  <p>Nhập dữ liệu công theo từng nhân viên để dùng khi tính lương tháng này.</p>
+
+  <form method="post" action="/admin/bang-cong/<%= nam %>/<%= thang %>/cap-nhat-luong-cong">
+    <table>
+      <thead>
+        <tr>
+          <th>Mã nhân viên</th>
+          <th>Họ tên</th>
+          <th>Số ngày công</th>
+          <th>Tổng giờ công</th>
+          <th>Tổng giờ OT</th>
+          <th>Dữ liệu đang dùng</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!payrollAdjustRows || !payrollAdjustRows.length) { %>
+          <tr>
+            <td colspan="6">Không có nhân viên để điều chỉnh.</td>
+          </tr>
+        <% } %>
+
+        <% (payrollAdjustRows || []).forEach((row) => { %>
+          <tr>
+            <td>
+              <%= row.MaNhanVien %>
+              <input type="hidden" name="maNhanVien" value="<%= row.MaNhanVien %>" />
+            </td>
+            <td><%= row.HoTen || '-' %></td>
+            <td>
+              <input type="number" step="0.5" min="0" name="soNgayCong" value="<%= row.SoNgayCong %>" />
+            </td>
+            <td>
+              <input type="number" step="0.5" min="0" name="tongGioCong" value="<%= row.TongGioCong %>" />
+            </td>
+            <td>
+              <input type="number" step="0.5" min="0" name="tongGioOT" value="<%= row.TongGioOT %>" />
+            </td>
+            <td><%= row.SuDungDuLieuCongTay ? 'Thủ công' : 'Theo chấm công' %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+
+    <div class="filter-actions" style="margin-top: 12px;">
+      <button class="btn" type="submit">Lưu dữ liệu công tính lương</button>
+      <span>Kỳ hiện tại: <strong><%= selectedPeriod?.TrangThaiKy || 'Mở' %></strong></span>
+    </div>
+  </form>
+</div>
+
+<%- include("partials/layoutEnd") %>

@@ -1,0 +1,423 @@
+<%- include('partials/start', { title, activeMenu, employee }) %>
+
+<% if (!employee) { %>
+  <section class="hero empty">
+    <h1>Không tìm thấy dữ liệu nhân viên</h1>
+    <p>Vui lòng liên hệ quản trị để liên kết tài khoản với hồ sơ nhân viên.</p>
+  </section>
+<% } else { %>
+  <section class="contract-board" id="hop-dong">
+    <header class="contract-header">
+      <div>
+        <h2><i class="bi bi-file-earmark-text-fill"></i> Hợp Đồng Của Tôi</h2>
+        <p>Thông tin hợp đồng lao động đang lưu trên hệ thống nhân sự.</p>
+      </div>
+      <a href="/user" class="contract-back"><i class="bi bi-arrow-left"></i> Quay lại dashboard</a>
+    </header>
+
+    <% if (!currentContract) { %>
+      <div class="contract-empty">Chưa có hợp đồng nào được gắn cho tài khoản của bạn.</div>
+    <% } else { %>
+      <article class="contract-highlight">
+        <div class="contract-highlight-title">
+          <h3><%= currentContract.MaHopDong %></h3>
+          <span><%= currentContract.TrangThai_HopDong || 'Chưa cập nhật' %></span>
+        </div>
+
+        <div class="contract-highlight-grid">
+          <div>
+            <label>Loại hợp đồng</label>
+            <strong><%= currentContract.LoaiHopDong || 'Chưa cập nhật' %></strong>
+          </div>
+          <div>
+            <label>Ngày bắt đầu</label>
+            <strong><%= currentContract.NgayBatDauText %></strong>
+          </div>
+          <div>
+            <label>Ngày kết thúc</label>
+            <strong><%= currentContract.NgayKetThucText %></strong>
+          </div>
+          <div>
+            <label>Lương cơ bản</label>
+            <strong><%= currentContract.MucLuongText %></strong>
+          </div>
+          <div>
+            <label>Phụ cấp cố định</label>
+            <strong><%= currentContract.PhuCapCoDinhText %></strong>
+          </div>
+          <div>
+            <label>Hệ số lương</label>
+            <strong><%= currentContract.HeSoLuongText %></strong>
+          </div>
+        </div>
+      </article>
+
+      <section class="contract-history">
+        <h3><i class="bi bi-clock-history"></i> Lịch sử hợp đồng</h3>
+
+        <div class="contract-table-wrap">
+          <table class="contract-table">
+            <thead>
+              <tr>
+                <th>Mã hợp đồng</th>
+                <th>Loại</th>
+                <th>Trạng thái</th>
+                <th>Bắt đầu</th>
+                <th>Kết thúc</th>
+                <th>Lương cơ bản</th>
+                <th>Phụ cấp</th>
+                <th>Hệ số</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% contracts.forEach((item) => { %>
+                <tr class="<%= item.IsDangHieuLuc ? 'contract-row-active' : '' %>">
+                  <td><%= item.MaHopDong %></td>
+                  <td><%= item.LoaiHopDong || 'Chưa cập nhật' %></td>
+                  <td>
+                    <span class="contract-status <%= item.IsDangHieuLuc ? 'active' : '' %>"><%= item.TrangThai_HopDong || 'Chưa cập nhật' %></span>
+                    <% if (item.IsDangHieuLuc) { %>
+                      <span class="contract-status active-effect">Đang hiệu lực</span>
+                    <% } %>
+                  </td>
+                  <td><%= item.NgayBatDauText %></td>
+                  <td><%= item.NgayKetThucText %></td>
+                  <td><%= item.MucLuongText %></td>
+                  <td><%= item.PhuCapCoDinhText %></td>
+                  <td><%= item.HeSoLuongText %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="contract-detail-stack">
+        <h3><i class="bi bi-journal-text"></i> Chi tiết hợp đồng đã ký</h3>
+        <p class="contract-detail-caption">Theo dõi đầy đủ điều khoản thời hạn và điều khoản tài chính của từng hợp đồng.</p>
+
+        <% contracts.forEach((item) => { %>
+          <article class="contract-detail-card">
+            <header class="contract-detail-head">
+              <div>
+                <h4><%= item.MaHopDong %></h4>
+                <p><%= item.LoaiHopDong || 'Chưa cập nhật loại hợp đồng' %></p>
+              </div>
+              <div class="contract-detail-right">
+                <div class="contract-detail-pills">
+                  <span class="contract-status <%= item.IsDangHieuLuc ? 'active' : '' %>"><%= item.TrangThai_HopDong || 'Chưa cập nhật' %></span>
+                  <span class="contract-status neutral"><%= item.TinhTrangHieuLuc %></span>
+                </div>
+                <div class="contract-print-actions">
+                  <button
+                    class="contract-print-btn"
+                    type="button"
+                    data-ma-hop-dong="<%= item.MaHopDong || '' %>"
+                    data-loai-hop-dong="<%= item.LoaiHopDong || 'Hợp đồng lao động' %>"
+                    data-trang-thai="<%= item.TrangThai_HopDong || '' %>"
+                    data-ngay-bat-dau="<%= item.NgayBatDauText || '' %>"
+                    data-ngay-ket-thuc="<%= item.NgayKetThucText || 'Không xác định' %>"
+                    data-he-so-luong="<%= item.HeSoLuongText || '1.00' %>"
+                    data-muc-luong="<%= item.MucLuongText || '' %>"
+                    data-phu-cap="<%= item.PhuCapCoDinhText || '' %>"
+                    data-luong-ap-dung="<%= item.LuongApDungText || '' %>"
+                    data-gio-cong="<%= item.SoGioCongText || '' %>"
+                    data-ho-ten="<%= employee?.HoTen || '' %>"
+                    data-ngay-sinh="<%= employee?.NgaySinh ? new Date(employee.NgaySinh).toLocaleDateString('vi-VN') : 'Chưa cập nhật' %>"
+                    data-so-cccd="<%= employee?.CCCD || 'Chưa cập nhật' %>"
+                    data-dia-chi="<%= employee?.DiaChi || 'Chưa cập nhật' %>"
+                    data-phong-ban="<%= employee?.TenPhongBan || 'Chưa cập nhật' %>"
+                    data-chuc-vu="<%= employee?.TenChucVu || 'Chưa cập nhật' %>"
+                  ><i class="bi bi-printer-fill"></i> In hợp đồng chuẩn VN</button>
+                </div>
+              </div>
+            </header>
+
+            <div class="contract-detail-grid">
+              <div>
+                <label>Ngày bắt đầu</label>
+                <strong><%= item.NgayBatDauText %></strong>
+              </div>
+              <div>
+                <label>Ngày kết thúc</label>
+                <strong><%= item.NgayKetThucText %></strong>
+              </div>
+              <div>
+                <label>Thời hạn hợp đồng</label>
+                <strong><%= item.SoNgayHieuLucText %></strong>
+              </div>
+              <div>
+                <label>Tình trạng thời hạn</label>
+                <strong><%= item.ConHanSauText %></strong>
+              </div>
+              <div>
+                <label>Lương cơ bản</label>
+                <strong><%= item.MucLuongText %></strong>
+              </div>
+              <div>
+                <label>Hệ số lương</label>
+                <strong><%= item.HeSoLuongText %></strong>
+              </div>
+              <div>
+                <label>Lương áp dụng</label>
+                <strong><%= item.LuongApDungText %></strong>
+              </div>
+              <div>
+                <label>Phụ cấp cố định</label>
+                <strong><%= item.PhuCapCoDinhText %></strong>
+              </div>
+              <div>
+                <label>Tổng thu nhập cơ bản</label>
+                <strong><%= item.TongThuNhapCoBanText %></strong>
+              </div>
+              <div>
+                <label>Giờ công chuẩn</label>
+                <strong><%= item.SoGioCongText %></strong>
+              </div>
+            </div>
+          </article>
+        <% }) %>
+      </section>
+    <% } %>
+  </section>
+<% } %>
+
+<script>
+  (function () {
+    const buttons = document.querySelectorAll('.contract-print-btn');
+    if (!buttons.length) return;
+
+    const now = new Date();
+    const printableDate = `Ngày ${now.getDate()} tháng ${now.getMonth() + 1} năm ${now.getFullYear()}`;
+    const companyInfo = {
+      name: 'CÔNG TY TNHH SEVENTIME',
+      taxCode: '0312345678',
+      address: 'Số 25 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh',
+      representative: 'Nguyễn Thành Công',
+      representativeTitle: 'Giám đốc Nhân sự',
+      representativeSignText: 'Nguyen Thanh Cong',
+    };
+
+    function getData(button, key, fallback = '') {
+      const value = String(button.dataset[key] || '').trim();
+      return value || fallback;
+    }
+
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const maHopDong = getData(button, 'maHopDong', '.................');
+        const loaiHopDong = getData(button, 'loaiHopDong', 'Hợp đồng lao động');
+        const trangThai = getData(button, 'trangThai', 'Chưa cập nhật');
+        const ngayBatDau = getData(button, 'ngayBatDau', 'Chưa cập nhật');
+        const ngayKetThuc = getData(button, 'ngayKetThuc', 'Không xác định');
+        const hoTen = getData(button, 'hoTen', '.............................................');
+        const ngaySinh = getData(button, 'ngaySinh', '.............................................');
+        const soCccd = getData(button, 'soCccd', '.............................................');
+        const diaChi = getData(button, 'diaChi', '.............................................');
+        const phongBan = getData(button, 'phongBan', '.............................................');
+        const chucVu = getData(button, 'chucVu', '.............................................');
+        const mucLuong = getData(button, 'mucLuong', '0 đ');
+        const heSoLuong = getData(button, 'heSoLuong', '1.00');
+        const luongApDung = getData(button, 'luongApDung', '0 đ');
+        const phuCap = getData(button, 'phuCap', '0 đ');
+        const gioCong = getData(button, 'gioCong', '0 giờ/tháng');
+
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+          window.alert('Trình duyệt đang chặn cửa sổ in. Vui lòng cho phép popup.');
+          return;
+        }
+
+        printWindow.document.write(`
+          <html>
+            <head>
+              <meta charset="UTF-8" />
+              <title>Hợp đồng lao động ${maHopDong}</title>
+              <style>
+                * { box-sizing: border-box; }
+                body {
+                  font-family: "Times New Roman", serif;
+                  font-size: 15px;
+                  line-height: 1.5;
+                  color: #111;
+                  margin: 0;
+                  padding: 28px 36px;
+                }
+                .doc-top {
+                  display: grid;
+                  grid-template-columns: 1fr 1fr;
+                  gap: 18px;
+                  margin-bottom: 14px;
+                }
+                .doc-top .left,
+                .doc-top .right {
+                  text-align: center;
+                }
+                .doc-top .right {
+                  text-transform: uppercase;
+                  font-weight: 700;
+                }
+                .doc-title {
+                  text-align: center;
+                  margin: 8px 0 4px;
+                  font-size: 24px;
+                  font-weight: 700;
+                  text-transform: uppercase;
+                }
+                .doc-subtitle {
+                  text-align: center;
+                  margin: 0 0 14px;
+                  font-style: italic;
+                }
+                .line { margin: 8px 0; }
+                .section-title {
+                  margin: 14px 0 6px;
+                  font-weight: 700;
+                }
+                .field-table {
+                  width: 100%;
+                  border-collapse: collapse;
+                  margin: 8px 0 12px;
+                }
+                .field-table td {
+                  border: 1px solid #222;
+                  padding: 8px 10px;
+                  vertical-align: top;
+                }
+                .signatures {
+                  margin-top: 26px;
+                  display: grid;
+                  grid-template-columns: 1fr 1fr;
+                  gap: 28px;
+                  text-align: center;
+                }
+                .signatures .title {
+                  font-weight: 700;
+                  text-transform: uppercase;
+                }
+                .sign-space {
+                  height: 80px;
+                }
+                .sign-fake {
+                  margin-top: 8px;
+                  font-family: "Brush Script MT", "Segoe Script", cursive;
+                  font-size: 34px;
+                  color: #0d3f83;
+                  letter-spacing: 1px;
+                }
+                .sign-name {
+                  margin-top: 4px;
+                  font-weight: 700;
+                }
+                .note {
+                  margin-top: 12px;
+                  font-style: italic;
+                  font-size: 13px;
+                }
+                @media print {
+                  body { padding: 18mm 14mm; }
+                }
+              </style>
+            </head>
+            <body>
+              <section class="doc-top">
+                <div class="left">
+                  <div><strong>${companyInfo.name}</strong></div>
+                  <div>Số: ${maHopDong}/HĐLĐ-ST</div>
+                </div>
+                <div class="right">
+                  <div>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+                  <div>Độc lập - Tự do - Hạnh phúc</div>
+                </div>
+              </section>
+
+              <h1 class="doc-title">Hợp đồng lao động</h1>
+              <p class="doc-subtitle">(${loaiHopDong})</p>
+
+              <p class="line">- Căn cứ Bộ luật Lao động năm 2019 và các văn bản hướng dẫn thi hành;</p>
+              <p class="line">- Căn cứ nhu cầu sử dụng lao động của ${companyInfo.name};</p>
+              <p class="line">- Căn cứ thỏa thuận giữa hai bên.</p>
+
+              <p class="line"><strong>Hôm nay, ${printableDate}, tại trụ sở ${companyInfo.name}, chúng tôi gồm:</strong></p>
+
+              <p class="section-title">BÊN SỬ DỤNG LAO ĐỘNG (BÊN A)</p>
+              <p class="line">Tên đơn vị: <strong>${companyInfo.name}</strong></p>
+              <p class="line">Mã số thuế: <strong>${companyInfo.taxCode}</strong></p>
+              <p class="line">Đại diện: <strong>${companyInfo.representative}</strong> - Chức vụ: <strong>${companyInfo.representativeTitle}</strong></p>
+              <p class="line">Địa chỉ trụ sở: ${companyInfo.address}</p>
+
+              <p class="section-title">BÊN NGƯỜI LAO ĐỘNG (BÊN B)</p>
+              <p class="line">Họ và tên: <strong>${hoTen}</strong></p>
+              <p class="line">Ngày sinh: ${ngaySinh}</p>
+              <p class="line">Số CCCD/CMND: ${soCccd}</p>
+              <p class="line">Địa chỉ thường trú: ${diaChi}</p>
+
+              <p class="section-title">Điều 1. Công việc, vị trí làm việc</p>
+              <p class="line">Bên B làm việc tại phòng ban: <strong>${phongBan}</strong>, chức vụ/chức danh: <strong>${chucVu}</strong>.</p>
+
+              <p class="section-title">Điều 2. Thời hạn hợp đồng</p>
+              <p class="line">Mã hợp đồng: <strong>${maHopDong}</strong> - Trạng thái: <strong>${trangThai}</strong></p>
+              <p class="line">Thời điểm bắt đầu: <strong>${ngayBatDau}</strong>; thời điểm kết thúc: <strong>${ngayKetThuc}</strong>.</p>
+
+              <p class="section-title">Điều 3. Tiền lương, phụ cấp và phương thức trả lương</p>
+              <table class="field-table">
+                <tr>
+                  <td>Lương cơ bản theo hợp đồng</td>
+                  <td><strong>${mucLuong}</strong></td>
+                </tr>
+                <tr>
+                  <td>Hệ số lương</td>
+                  <td><strong>${heSoLuong}</strong></td>
+                </tr>
+                <tr>
+                  <td>Lương áp dụng</td>
+                  <td><strong>${luongApDung}</strong></td>
+                </tr>
+                <tr>
+                  <td>Phụ cấp cố định</td>
+                  <td><strong>${phuCap}</strong></td>
+                </tr>
+                <tr>
+                  <td>Giờ công chuẩn</td>
+                  <td><strong>${gioCong}</strong></td>
+                </tr>
+              </table>
+
+              <p class="section-title">Điều 4. Quyền và nghĩa vụ của các bên</p>
+              <p class="line">1. Bên A có trách nhiệm bố trí công việc đúng thỏa thuận, thanh toán lương và chế độ theo quy định.</p>
+              <p class="line">2. Bên B có trách nhiệm thực hiện công việc được giao, tuân thủ nội quy lao động và bảo mật thông tin công ty.</p>
+              <p class="line">3. Các nội dung khác không ghi trong hợp đồng này được thực hiện theo pháp luật lao động hiện hành và nội quy của công ty.</p>
+
+              <p class="section-title">Điều 5. Điều khoản thi hành</p>
+              <p class="line">Hợp đồng này được lập thành 02 bản có giá trị pháp lý như nhau, mỗi bên giữ 01 bản và có hiệu lực từ ngày đã thỏa thuận.</p>
+
+              <section class="signatures">
+                <div>
+                  <div class="title">ĐẠI DIỆN BÊN A</div>
+                  <div>(Ký, ghi rõ họ tên, đóng dấu)</div>
+                  <div class="sign-space"></div>
+                  <div class="sign-fake">${companyInfo.representativeSignText}</div>
+                  <div class="sign-name">${companyInfo.representative}</div>
+                </div>
+                <div>
+                  <div class="title">NGƯỜI LAO ĐỘNG (BÊN B)</div>
+                  <div>(Ký và ghi rõ họ tên)</div>
+                  <div class="sign-space"></div>
+                  <div class="sign-fake">${hoTen}</div>
+                  <div class="sign-name"><strong>${hoTen}</strong></div>
+                </div>
+              </section>
+
+              <p class="note">Lưu ý: Chữ ký hiển thị là chữ ký giả lập để phục vụ in thử nội bộ. Khi sử dụng chính thức, vui lòng ký và đóng dấu theo quy định pháp luật.</p>
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+      });
+    });
+  })();
+</script>
+
+<%- include('partials/end') %>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title %></title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="/admin/dashboard" aria-label="Về Bảng điều khiển">
+        <img class="brand-logo" src="/assets/logo-hrms.svg" alt="SevenTime HRMS" />
+      </a>
+      <nav>
+        <a class="top-link" href="/admin/dashboard"><i class="bi bi-speedometer2"></i><span>Bảng điều khiển</span></a>
+        <% 
+          const sectionIconMap = {
+            "Danh mục tổ chức": "bi-diagram-3",
+            "Hồ sơ nhân sự": "bi-people",
+            "Chấm công": "bi-clock-history",
+            "Tiền lương": "bi-cash-stack",
+            "Tài khoản": "bi-person-gear",
+          };
+          const sectionOrder = ["Danh mục tổ chức", "Hồ sơ nhân sự", "Chấm công", "Tiền lương", "Tài khoản"];
+          const sectionEntries = sectionOrder.map((section) => ({
+            section,
+            items: Object.entries(entities).filter(([, entity]) => entity.section === section),
+          }));
+          const sectionLookup = sectionEntries.reduce((acc, current) => {
+            acc[current.section] = current.items;
+            return acc;
+          }, {});
+          const navGroups = [
+            {
+              label: "Tổ chức & Nhân sự",
+              icon: "bi-buildings",
+              sections: ["Danh mục tổ chức", "Hồ sơ nhân sự"],
+            },
+            {
+              label: "Chấm công & Lương",
+              icon: "bi-clipboard2-pulse",
+              sections: ["Chấm công", "Tiền lương"],
+            },
+            {
+              label: "Hệ thống",
+              icon: "bi-gear-wide-connected",
+              sections: ["Tài khoản"],
+            },
+          ]
+            .map((group) => ({
+              ...group,
+              items: group.sections.flatMap((section) => sectionLookup[section] || []),
+            }))
+            .filter((group) => group.items.length > 0);
+          const displayName = String(authUser?.hoTen || authUser?.tenDangNhap || "Bạn").trim();
+        %>
+
+        <% navGroups.forEach((group) => { %>
+          <div class="menu-group is-collapsed" data-menu-group>
+            <button class="menu-group-toggle" type="button" aria-expanded="false">
+              <span><i class="bi <%= group.icon %>"></i><%= group.label %></span>
+              <span class="menu-caret">▾</span>
+            </button>
+            <div class="menu-items">
+              <% group.items.forEach(([key, entity], itemIndex) => { %>
+                <% const previousEntity = itemIndex > 0 ? group.items[itemIndex - 1][1] : null; %>
+                <% if (!previousEntity || previousEntity.section !== entity.section) { %>
+                  <div class="menu-section-label">
+                    <i class="bi <%= sectionIconMap[entity.section] || 'bi-list' %>"></i>
+                    <span><%= entity.section %></span>
+                  </div>
+                <% } %>
+                <a class="submenu-link" href="/admin/<%= key %>">
+                  <i class="bi <%= entity.icon || 'bi-dot' %>"></i>
+                  <span><%= entity.menuLabel || entity.label %></span>
+                </a>
+              <% }); %>
+            </div>
+          </div>
+        <% }); %>
+
+        <div class="nav-utilities">
+          <div class="welcome-user">Xin chào, <strong><%= displayName %></strong></div>
+          <div class="menu-group utility-menu is-collapsed" data-menu-group>
+            <button class="menu-group-toggle utility-menu-toggle" type="button" aria-expanded="false">
+              <span><i class="bi bi-box-arrow-right"></i>Đăng xuất</span>
+              <span class="menu-caret">▾</span>
+            </button>
+            <div class="menu-items utility-menu-items">
+              <a class="submenu-link" href="/admin/thongbao">
+                <i class="bi bi-megaphone"></i>
+                <span>Thông báo</span>
+              </a>
+
+              <a class="submenu-link" href="/admin/he-so-luong">
+                <i class="bi bi-sliders2"></i>
+                <span>Chỉnh hệ số lương</span>
+              </a>
+
+              <a class="submenu-link" href="/admin/lich-su-hoat-dong">
+                <i class="bi bi-clock-history"></i>
+                <span>Lịch sử hoạt động</span>
+              </a>
+
+              <a class="submenu-link" href="/admin/doimatkhau">
+                <i class="bi bi-key"></i>
+                <span>Đổi mật khẩu</span>
+              </a>
+
+              <form class="logout-form utility-logout-form" action="/logout" method="post">
+                <button type="submit" class="submenu-link logout-menu-button">
+                  <i class="bi bi-box-arrow-right"></i>
+                  <span>Đăng xuất</span>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </aside>
+    <main class="main-content">

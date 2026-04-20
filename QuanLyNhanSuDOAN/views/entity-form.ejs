@@ -1,0 +1,235 @@
+<%- include("partials/layoutStart", { title, entities }) %>
+
+<%
+  const safeRelationOptions =
+    typeof relationOptions !== "undefined" && relationOptions
+      ? relationOptions
+      : {};
+  const safeAccountDefaults =
+    typeof accountDefaults !== "undefined" && accountDefaults
+      ? accountDefaults
+      : { createAccount: true, tenDangNhap: "", trangThaiTaiKhoan: "Hoạt động" };
+%>
+
+<section class="page-header row">
+  <div>
+    <h1><%= mode === "create" ? "Thêm mới" : "Cập nhật" %> <%= entity.label %></h1>
+    <p>Nhập thông tin theo mẫu</p>
+  </div>
+  <a class="btn ghost" href="/admin/<%= entityName %>">Quay lại</a>
+</section>
+
+<div class="form-wrap">
+  <% if (uploadError) { %>
+    <div class="news-flash error"><%= uploadError %></div>
+  <% } %>
+
+  <form
+    method="post"
+    action="<%= mode === 'create' ? '/admin/' + entityName + '/new' : '/admin/' + entityName + '/' + record[keyField] + '/edit' %>"
+    enctype="<%= entityName === 'nhanvien' ? 'multipart/form-data' : 'application/x-www-form-urlencoded' %>"
+  >
+    <div class="grid">
+      <% fields.forEach((field) => { %>
+        <% 
+          const isAutoKeyOnCreate = mode === 'create' && field.isKey && isAutoCodeField && isAutoCodeField(field.name);
+          const relationChoices = Array.isArray(safeRelationOptions[field.name])
+            ? safeRelationOptions[field.name]
+            : [];
+          const rawValue = record[field.name];
+          const hasValue = rawValue !== undefined && rawValue !== null && rawValue !== "";
+          const displayValue = field.isPassword
+            ? ''
+            : field.instance === 'Date'
+            ? formatDate(rawValue)
+            : (field.instance === 'Number' && hasValue
+              ? Number(rawValue).toLocaleString('en-US')
+              : (rawValue || ''));
+        %>
+        <label>
+          <span><%= field.label %></span>
+          <% if (isAutoKeyOnCreate) { %>
+            <input type="text" value="Tự động tăng sau khi lưu" readonly disabled />
+            <small>Mã sẽ được hệ thống tự sinh và không cho sửa khi thêm mới.</small>
+          <% } else if (entityName === 'nhanvien' && field.name === 'HinhAnh') { %>
+            <% const previewUrl = String(displayValue || '').trim(); %>
+            <% if (previewUrl) { %>
+              <img src="<%= previewUrl %>" alt="Xem trước ảnh nhân viên" class="employee-image-preview" />
+            <% } else { %>
+              <div class="employee-image-preview employee-image-empty">Chưa có ảnh</div>
+            <% } %>
+            <input type="file" name="HinhAnhFile" accept="image/*" />
+            <small>Chọn ảnh từ máy tính (jpg, png, webp, heic... tối đa 12MB).</small>
+            <input type="hidden" name="currentHinhAnh" value="<%= previewUrl %>" />
+          <% } else if (relationChoices.length) { %>
+            <select
+              name="<%= field.name %>"
+              <%= field.required ? "required" : "" %>
+              <%= mode === "edit" && field.isKey ? "disabled" : "" %>
+            >
+              <option value="">-- Chọn --</option>
+              <% relationChoices.forEach((option) => { %>
+                <option value="<%= option.value %>" <%= String(displayValue || '') === String(option.value) ? 'selected' : '' %>>
+                  <%= option.label %>
+                </option>
+              <% }); %>
+            </select>
+          <% } else if (field.enumValues && field.enumValues.length) { %>
+            <select
+              name="<%= field.name %>"
+              <%= field.required ? "required" : "" %>
+              <%= mode === "edit" && field.isKey ? "disabled" : "" %>
+            >
+              <% if (!field.required) { %>
+                <option value="">-- Chọn --</option>
+              <% } %>
+              <% field.enumValues.forEach((option) => { %>
+                <option value="<%= option %>" <%= String(displayValue || '') === String(option) ? 'selected' : '' %>>
+                  <%= option %>
+                </option>
+              <% }); %>
+            </select>
+            <% if (mode === "edit" && field.isKey) { %>
+              <input type="hidden" name="<%= field.name %>" value="<%= displayValue %>" />
+            <% } %>
+          <% } else { %>
+            <input
+              type="<%= field.instance === 'Number' ? 'text' : field.inputType %>"
+              name="<%= field.name %>"
+              value="<%= displayValue %>"
+              <%= field.isPassword ? (mode === 'edit' ? 'placeholder="Để trống nếu không đổi mật khẩu" autocomplete="new-password"' : 'autocomplete="new-password"') : '' %>
+              <%= field.instance === 'Number' ? 'inputmode="decimal" autocomplete="off" data-number-input="true" placeholder="VD: 100,000,000"' : '' %>
+              <%= field.required && !(field.isPassword && mode === 'edit') ? "required" : "" %>
+              <%= mode === "edit" && field.isKey ? "readonly" : "" %>
+            />
+          <% } %>
+        </label>
+      <% }); %>
+    </div>
+
+    <% if (entityName === 'nhanvien' && mode === 'create') { %>
+      <section class="form-subsection">
+        <h3 class="section-title">Tài khoản đăng nhập nhân viên</h3>
+        <label class="inline-check">
+          <input
+            type="checkbox"
+            id="createEmployeeAccount"
+            name="createAccount"
+            <%= safeAccountDefaults.createAccount ? 'checked' : '' %>
+          />
+          <span>Tạo tài khoản đăng nhập ngay</span>
+        </label>
+
+        <div class="grid account-grid" id="employeeAccountFields">
+          <label>
+            <span>Tên đăng nhập</span>
+            <input
+              type="text"
+              name="TenDangNhap"
+              value="<%= safeAccountDefaults.tenDangNhap || '' %>"
+              placeholder="Để trống sẽ dùng mã nhân viên"
+            />
+          </label>
+
+          <label>
+            <span>Mật khẩu</span>
+            <input type="password" name="MatKhau" autocomplete="new-password" />
+          </label>
+
+          <label>
+            <span>Trạng thái tài khoản</span>
+            <select name="TrangThai_TaiKhoan">
+              <option value="Hoạt động" <%= safeAccountDefaults.trangThaiTaiKhoan === 'Hoạt động' ? 'selected' : '' %>>Hoạt động</option>
+              <option value="Khóa" <%= safeAccountDefaults.trangThaiTaiKhoan === 'Khóa' ? 'selected' : '' %>>Khóa</option>
+            </select>
+          </label>
+        </div>
+      </section>
+    <% } %>
+
+    <button class="btn" type="submit"><%= mode === "create" ? "Tạo mới" : "Lưu thay đổi" %></button>
+  </form>
+</div>
+
+<script>
+  (function () {
+    const numberInputs = Array.from(document.querySelectorAll('input[data-number-input="true"]'));
+    if (!numberInputs.length) return;
+
+    function formatNumberValue(value) {
+      const sanitized = String(value || "")
+        .replace(/,/g, "")
+        .replace(/\s+/g, "")
+        .replace(/[^\d.]/g, "");
+
+      if (!sanitized) return "";
+
+      const [integerPartRaw, ...decimalRest] = sanitized.split(".");
+      const integerPart = (integerPartRaw || "").replace(/^0+(\d)/, "$1") || "0";
+      const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      const decimalPart = decimalRest.join("");
+
+      return decimalPart ? `${formattedInteger}.${decimalPart}` : formattedInteger;
+    }
+
+    numberInputs.forEach((input) => {
+      input.value = formatNumberValue(input.value);
+
+      input.addEventListener("input", () => {
+        input.value = formatNumberValue(input.value);
+      });
+    });
+  })();
+
+  (function () {
+    const fileInput = document.querySelector('input[name="HinhAnhFile"]');
+    const previewEl = document.querySelector('.employee-image-preview');
+    if (!fileInput || !previewEl) return;
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (previewEl.tagName === 'IMG') {
+          previewEl.src = event.target?.result || '';
+          return;
+        }
+
+        const img = document.createElement('img');
+        img.className = 'employee-image-preview';
+        img.alt = 'Xem trước ảnh nhân viên';
+        img.src = event.target?.result || '';
+        previewEl.replaceWith(img);
+      };
+      reader.readAsDataURL(file);
+    });
+  })();
+
+  (function () {
+    const createAccountCheckbox = document.getElementById('createEmployeeAccount');
+    const accountContainer = document.getElementById('employeeAccountFields');
+    if (!createAccountCheckbox || !accountContainer) return;
+
+    const controlledFields = Array.from(
+      accountContainer.querySelectorAll('input[name="TenDangNhap"], input[name="MatKhau"], select[name="TrangThai_TaiKhoan"]'),
+    );
+    const passwordField = accountContainer.querySelector('input[name="MatKhau"]');
+
+    const syncAccountFields = () => {
+      const enabled = createAccountCheckbox.checked;
+      controlledFields.forEach((field) => {
+        field.disabled = !enabled;
+      });
+
+      if (passwordField) {
+        passwordField.required = enabled;
+      }
+    };
+
+    createAccountCheckbox.addEventListener('change', syncAccountFields);
+    syncAccountFields();
+  })();
+</script>
+
+<%- include("partials/layoutEnd") %>

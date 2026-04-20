@@ -1,0 +1,155 @@
+<%- include("partials/layoutStart", { title, entities }) %>
+
+<section class="page-header row">
+  <div>
+    <h1>Lịch sử hoạt động</h1>
+    <p>Theo dõi thao tác chấm công và thay đổi dữ liệu của nhân viên trong hệ thống</p>
+  </div>
+</section>
+
+<section class="table-wrap activity-filter-wrap">
+  <form class="activity-filter-form" method="get" action="/admin/lich-su-hoat-dong">
+    <label>
+      <span><i class="bi bi-search"></i> Từ khóa</span>
+      <input
+        type="text"
+        name="keyword"
+        placeholder="Họ tên, mã NV, tuyến đường, mô tả..."
+        value="<%= filters.keyword %>"
+      />
+    </label>
+
+    <label>
+      <span><i class="bi bi-diagram-3"></i> Hành động</span>
+      <select name="action">
+        <option value="">-- Tất cả --</option>
+        <% actionOptions.forEach((item) => { %>
+          <option value="<%= item %>" <%= filters.action === item ? 'selected' : '' %>><%= item %></option>
+        <% }); %>
+      </select>
+    </label>
+
+    <label>
+      <span><i class="bi bi-person-badge"></i> Nhân viên</span>
+      <select name="maNhanVien">
+        <option value="">-- Tất cả --</option>
+        <% employeeOptions.forEach((item) => { %>
+          <option value="<%= item.maNhanVien %>" <%= filters.maNhanVien === item.maNhanVien ? 'selected' : '' %>>
+            <%= item.maNhanVien %><%= item.hoTen ? ` - ${item.hoTen}` : "" %>
+          </option>
+        <% }); %>
+      </select>
+    </label>
+
+    <label>
+      <span><i class="bi bi-calendar-event"></i> Từ ngày</span>
+      <input type="date" name="fromDate" value="<%= filters.fromDate %>" />
+    </label>
+
+    <label>
+      <span><i class="bi bi-calendar-check"></i> Đến ngày</span>
+      <input type="date" name="toDate" value="<%= filters.toDate %>" />
+    </label>
+
+    <label>
+      <span><i class="bi bi-list-ol"></i> Hiển thị</span>
+      <select name="limit">
+        <% [10, 20, 30, 50, 100].forEach((size) => { %>
+          <option value="<%= size %>" <%= Number(filters.limit) === size ? 'selected' : '' %>><%= size %> dòng</option>
+        <% }); %>
+      </select>
+    </label>
+
+    <div class="activity-filter-actions">
+      <button class="btn" type="submit"><i class="bi bi-funnel"></i> Lọc</button>
+      <a class="btn steel" href="/admin/lich-su-hoat-dong"><i class="bi bi-x-lg"></i> Xóa lọc</a>
+    </div>
+  </form>
+</section>
+
+<section class="table-wrap activity-table-wrap">
+  <div class="activity-summary">
+    Tổng bản ghi: <strong><%= new Intl.NumberFormat("vi-VN").format(pagination.totalItems) %></strong>
+  </div>
+
+  <table class="activity-table">
+    <thead>
+      <tr>
+        <th>Thời gian</th>
+        <th>Nhân sự thực hiện</th>
+        <th>Hành động</th>
+        <th>Đối tượng</th>
+        <th>Mô tả</th>
+        <th>Đường dẫn</th>
+        <th>Trạng thái</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (!rows.length) { %>
+        <tr>
+          <td colspan="7">Chưa có bản ghi hoạt động phù hợp bộ lọc.</td>
+        </tr>
+      <% } %>
+
+      <% rows.forEach((row) => { %>
+        <tr>
+          <td>
+            <% const date = new Date(row.ThoiGian); %>
+            <%= Number.isNaN(date.getTime()) ? "--" : date.toLocaleString("vi-VN") %>
+          </td>
+          <td>
+            <strong><%= row.HoTen || "Không rõ" %></strong><br />
+            <small>
+              <%= row.MaNhanVien || row.TenDangNhap || "--" %>
+              <% if (row.VaiTro) { %>
+                · <%= row.VaiTro %>
+              <% } %>
+            </small>
+          </td>
+          <td><span class="activity-badge"><%= row.HanhDong %></span></td>
+          <td>
+            <strong><%= row.DoiTuong || "--" %></strong>
+            <% if (row.MaDoiTuong) { %>
+              <br /><small><%= row.MaDoiTuong %></small>
+            <% } %>
+          </td>
+          <td><%= row.MoTa || "--" %></td>
+          <td><code><%= row.PhuongThuc || "" %> <%= row.DuongDan || "" %></code></td>
+          <td><%= row.TrangThaiHTTP || "--" %></td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+
+  <% if (pagination.totalPages > 1) { %>
+    <%
+      const qs = new URLSearchParams({
+        keyword: filters.keyword || "",
+        action: filters.action || "",
+        maNhanVien: filters.maNhanVien || "",
+        fromDate: filters.fromDate || "",
+        toDate: filters.toDate || "",
+        limit: String(filters.limit || 20),
+      });
+    %>
+    <nav class="activity-pagination" aria-label="Điều hướng phân trang">
+      <% if (pagination.hasPrev) { %>
+        <% qs.set("page", String(pagination.prevPage)); %>
+        <a class="btn ghost small" href="/admin/lich-su-hoat-dong?<%= qs.toString() %>">← Trang trước</a>
+      <% } else { %>
+        <span class="btn ghost small is-disabled">← Trang trước</span>
+      <% } %>
+
+      <span class="activity-page-meta">Trang <strong><%= pagination.page %></strong>/<%= pagination.totalPages %></span>
+
+      <% if (pagination.hasNext) { %>
+        <% qs.set("page", String(pagination.nextPage)); %>
+        <a class="btn ghost small" href="/admin/lich-su-hoat-dong?<%= qs.toString() %>">Trang sau →</a>
+      <% } else { %>
+        <span class="btn ghost small is-disabled">Trang sau →</span>
+      <% } %>
+    </nav>
+  <% } %>
+</section>
+
+<%- include("partials/layoutEnd") %>

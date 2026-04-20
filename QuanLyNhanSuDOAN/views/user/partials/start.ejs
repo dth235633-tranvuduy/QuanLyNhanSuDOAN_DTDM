@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title %></title>
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+  />
+  <link rel="stylesheet" href="/css/user.css" />
+</head>
+<body>
+  <% const displayEmployeeName = (() => {
+    const raw = String(employee?.HoTen || 'Nhân viên').trim().replace(/\s+/g, ' ');
+    return raw
+      .toLocaleLowerCase('vi-VN')
+      .replace(/(^|\s)\S/g, (match) => match.toLocaleUpperCase('vi-VN'));
+  })(); %>
+  <header class="user-topbar">
+    <div class="brand-wrap">
+      <img src="/assets/logo-hrms.svg" alt="SevenTime HRMS" />
+    </div>
+
+    <div class="topbar-actions">
+      <button
+        type="button"
+        class="menu-toggle"
+        aria-expanded="false"
+        aria-controls="userMainNav"
+        aria-label="Mo menu dieu huong"
+      >
+        <i class="bi bi-list"></i>
+      </button>
+
+      <details class="account-menu">
+        <summary class="user-chip">
+          <i class="bi bi-person-circle"></i>
+          <span><%= displayEmployeeName %></span>
+          <i class="bi bi-chevron-down"></i>
+        </summary>
+
+        <div class="account-menu-box">
+          <a href="/user/doi-mat-khau"><i class="bi bi-key-fill"></i> Đổi mật khẩu</a>
+          <form method="post" action="/logout">
+            <button type="submit"><i class="bi bi-box-arrow-right"></i> Đăng xuất</button>
+          </form>
+        </div>
+      </details>
+    </div>
+
+    <nav class="user-nav" id="userMainNav" aria-label="Dieu huong nhan vien">
+      <a href="/user" class="<%= activeMenu === 'home' ? 'active' : '' %>"><i class="bi bi-house-door-fill"></i> Trang chủ</a>
+
+      <details class="nav-dropdown <%= (activeMenu === 'hoso' || activeMenu === 'hopdong' || activeMenu === 'doimatkhau') ? 'active' : '' %>">
+        <summary class="nav-dropdown-toggle">
+          <i class="bi bi-person-lines-fill"></i>
+          Hồ sơ nhân sự
+          <i class="bi bi-chevron-down"></i>
+        </summary>
+        <div class="nav-dropdown-menu">
+          <a href="/user/hoso"><i class="bi bi-person-vcard-fill"></i> Hồ sơ của tôi</a>
+          <a href="/user/hop-dong"><i class="bi bi-file-earmark-text-fill"></i> Hợp đồng</a>
+        </div>
+      </details>
+
+      <a href="/user/hop-dong" class="<%= activeMenu === 'hopdong' ? 'active' : '' %>"><i class="bi bi-file-earmark-text-fill"></i> Hợp đồng</a>
+      <details class="nav-dropdown <%= (activeMenu === 'bangcong' || activeMenu === 'chamcong' || activeMenu === 'nghiphep') ? 'active' : '' %>">
+        <summary class="nav-dropdown-toggle">
+          <i class="bi bi-calendar-check"></i>
+          Chấm công
+          <i class="bi bi-chevron-down"></i>
+        </summary>
+        <div class="nav-dropdown-menu">
+          <a href="/user/cham-cong"><i class="bi bi-table"></i> Bảng công</a>
+          <a href="/user/cham-cong/tram"><i class="bi bi-geo-alt-fill"></i> Chấm công</a>
+          <a href="/user/xin-nghi"><i class="bi bi-envelope-paper-heart-fill"></i> Xin nghỉ online</a>
+        </div>
+      </details>
+      <a href="/user/bang-luong" class="<%= activeMenu === 'bangluong' ? 'active' : '' %>"><i class="bi bi-cash-stack"></i> Bảng lương</a>
+      <a href="/user/thongbao" class="<%= activeMenu === 'thongbao' ? 'active' : '' %>"><i class="bi bi-megaphone-fill"></i> Thông báo</a>
+    </nav>
+  </header>
+
+  <main class="user-page">
+</html>
