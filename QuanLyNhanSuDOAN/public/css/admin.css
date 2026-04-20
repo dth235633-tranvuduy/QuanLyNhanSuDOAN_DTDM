@@ -40,7 +40,7 @@ body {
 .sidebar {
   background: linear-gradient(165deg, #193845 0%, #122d37 40%, #2f5b4f 100%);
   color: #f8fdff;
-  padding: 10px 16px;
+  padding: 8px 12px;
   border-bottom: 1px solid #ffffff24;
   position: sticky;
   top: 0;
@@ -49,7 +49,7 @@ body {
   z-index: 40;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   width: 100%;
   min-width: 0;
 }
@@ -72,12 +72,12 @@ body {
 .brand {
   display: block;
   text-decoration: none;
-  padding: 6px;
+  padding: 5px;
   border-radius: 12px;
   background: linear-gradient(135deg, #ffffff26 0%, #ffffff0e 100%);
   margin-bottom: 0;
   border: 1px solid #ffffff3b;
-  width: 180px;
+  width: 160px;
   flex: 0 0 auto;
 }
 
@@ -90,7 +90,7 @@ body {
 
 .sidebar nav {
   display: flex;
-  gap: 10px;
+  gap: 7px;
   align-items: center;
   flex-wrap: wrap;
   flex: 1;
@@ -103,17 +103,18 @@ body {
   align-items: center;
   color: #eff8f4;
   text-decoration: none;
-  padding: 10px 14px;
+  padding: 8px 11px;
   border-radius: 999px;
   font-weight: 500;
+  font-size: 0.95rem;
   border: 1px solid transparent;
   transition: 180ms ease;
   line-height: 1.25;
 }
 
 .sidebar nav a i {
-  width: 18px;
-  margin-right: 10px;
+  width: 16px;
+  margin-right: 8px;
   display: inline-block;
   text-align: center;
 }
@@ -149,12 +150,12 @@ body {
 .menu-group-toggle {
   width: auto;
   margin: 0;
-  padding: 10px 14px;
+  padding: 8px 11px;
   background: transparent;
   border: 1px solid #ffffff1f;
   color: #d8f0e8;
   font: inherit;
-  font-size: 15px;
+  font-size: 14px;
   letter-spacing: 0.1px;
   text-transform: none;
   font-weight: 600;
@@ -213,14 +214,14 @@ body {
 }
 
 .menu-group-toggle i {
-  margin-right: 10px;
+  margin-right: 8px;
 }
 
 .menu-caret {
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1;
   transition: transform 180ms ease;
-  margin-left: 8px;
+  margin-left: 6px;
 }
 
 .menu-items {
@@ -304,15 +305,18 @@ body {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding-left: 6px;
+  gap: 6px;
+  padding-left: 4px;
   border-left: 1px solid #ffffff2a;
 }
 
 .welcome-user {
   color: #d8f0e8;
-  font-size: 13px;
-  padding: 0 6px;
+  font-size: 12px;
+  padding: 0 4px;
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -340,6 +344,37 @@ body {
   right: 0;
   left: auto;
   min-width: 210px;
+}
+
+@media (max-width: 1360px) {
+  .sidebar {
+    padding: 8px 9px;
+    gap: 8px;
+  }
+
+  .brand {
+    width: 144px;
+  }
+
+  .sidebar nav {
+    gap: 6px;
+  }
+
+  .sidebar nav a,
+  .menu-group-toggle {
+    padding: 7px 9px;
+    font-size: 0.88rem;
+  }
+
+  .sidebar nav a i,
+  .menu-group-toggle i {
+    margin-right: 6px;
+  }
+
+  .welcome-user {
+    max-width: 130px;
+    font-size: 11px;
+  }
 }
 
 .utility-logout-form {

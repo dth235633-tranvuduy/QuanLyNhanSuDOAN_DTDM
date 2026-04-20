@@ -38,8 +38,8 @@ body {
   grid-template-columns: auto 1fr auto;
   grid-template-areas: "brand nav actions";
   align-items: center;
-  gap: 18px;
-  padding: 12px 18px;
+  gap: 14px;
+  padding: 10px 14px;
   box-shadow: 0 14px 24px -20px rgba(0, 0, 0, 0.6);
 }
 
@@ -48,7 +48,7 @@ body {
 }
 
 .brand-wrap img {
-  width: 138px;
+  width: 126px;
   height: auto;
   display: block;
 }
@@ -58,7 +58,7 @@ body {
   display: flex;
   align-items: center;
   justify-self: end;
-  gap: 10px;
+  gap: 8px;
 }
 
 .menu-toggle {
@@ -76,7 +76,7 @@ body {
 .user-nav {
   grid-area: nav;
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-start;
@@ -87,12 +87,12 @@ body {
   color: #e4fff8;
   text-decoration: none;
   font-weight: 600;
-  padding: 10px 14px;
+  padding: 8px 11px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  font-size: 1.02rem;
+  gap: 6px;
+  font-size: 0.94rem;
   white-space: nowrap;
   opacity: 0.96;
   border: 1px solid transparent;
@@ -112,19 +112,19 @@ body {
   background: #ffffff20;
   color: #fff;
   border: 1px solid #ffffff38;
-  padding: 10px 14px;
+  padding: 8px 11px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-weight: 600;
-  font-size: 1.04rem;
+  font-size: 0.95rem;
   cursor: pointer;
   user-select: none;
 }
 
 .user-chip span {
-  max-width: 190px;
+  max-width: 150px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -144,11 +144,11 @@ body {
   border: none;
   font: inherit;
   font-weight: 600;
-  padding: 10px 13px;
+  padding: 8px 11px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -2784,7 +2784,7 @@ body {
   }
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 1120px) {
   .user-topbar {
     grid-template-columns: auto 1fr;
     grid-template-areas:
