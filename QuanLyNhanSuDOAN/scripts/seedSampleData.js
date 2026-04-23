@@ -63,7 +63,8 @@ const nhanVienData = [
     CCCD: "079098001111",
     Email: "hoai.pt@seventime.vn",
     SoDienThoai: "035663827",
-    DiaChi: "Long Xuyen, An Giang",
+    DiaChi:
+      "Dai hoc An Giang, 18 Ung Van Khiem, Dong Xuyen, Long Xuyen, An Giang",
     NgayVaoLam: new Date("2023-01-10"),
     TrangThai_NhanVien: "Dang lam viec",
     MaPhongBan: "PB01",

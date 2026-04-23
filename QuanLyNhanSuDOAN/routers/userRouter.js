@@ -77,9 +77,9 @@ const uploadProfileAvatar = multer({
   },
 });
 const OFFICE_LOCATION = {
-  lat: 10.3872,
-  lng: 105.4355,
-  label: "Đèn 4 Ngọn, Long Xuyên",
+  lat: 10.3718,
+  lng: 105.4312,
+  label: "Đại học An Giang, 18 Ung Văn Khiêm, P. Đông Xuyên, Long Xuyên",
 };
 const CHECK_IN_WINDOW = {
   startMinutes: 8 * 60,
