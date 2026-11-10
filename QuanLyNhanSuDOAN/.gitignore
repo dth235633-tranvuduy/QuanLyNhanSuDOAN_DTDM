@@ -1,0 +1,28 @@
+# Dependencies and local tooling
+node_modules/
+npm-debug.log*
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Runtime data and generated uploads
+public/uploads/
+coverage/
+
+# Large archives and database dumps
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+*.bak
+*.dump
+*.sql
+
+# Operating-system and editor files
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
