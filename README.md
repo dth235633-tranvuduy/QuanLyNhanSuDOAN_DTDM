@@ -2,9 +2,7 @@
 
 # SevenTime HRMS - Hệ thống quản lý nhân sự
 
-<p align="center">
-  <img src="public/assets/logo-hrms.svg" alt="SevenTime HRMS" width="100">
-</p>
+
 
 <p align="center">
   <strong>Hệ thống quản lý nhân sự cho doanh nghiệp</strong>
